@@ -7,19 +7,22 @@ import {
     ScrollView,
     Platform,
     TouchableWithoutFeedback,
+    TouchableOpacity,
     Keyboard,
     Switch,
+    Pressable,
 
 } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { useState } from 'react';
-import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import LoginLogo from '../../assets/images/login-image.png';// Make sure alias is resolved in tsconfig.json
 
 
 export default function LoginScreen() {
     const [checked, setChecked] = useState(false);
     const toggleSwitch = () => setChecked(previousState => !previousState);
+    const router = useRouter();
     return (
         <SafeAreaProvider>
             <SafeAreaView>
@@ -32,20 +35,23 @@ export default function LoginScreen() {
                             contentContainerStyle={{ flexGrow: 1 }}
                             keyboardShouldPersistTaps="handled"
                         >
-                            <View className="flex-col justify-evenly bg-blue-200 h-full  items-center px-4 ">
-                                <Image
-                                    source={LoginLogo}
-                                    className="w-[300px] h-[250px]"
-                                    resizeMode="contain"
-                                />
+                            <View className="flex-col justify-evenly  h-full  items-center px-4 ">
+                                <View className='items-center justify-center '>
 
-                                <View className="flex-col mb-8">
-                                    <Text className="text-[32px] font-bold text-center">
-                                        Welcome Back
-                                    </Text>
-                                    <Text className="text-[16px] text-center text-gray-600">
-                                        Sign in to access your account
-                                    </Text>
+                                    <Image
+                                        source={LoginLogo}
+                                        className="w-[300px] h-[250px] ml-[80px]"
+                                        resizeMode="contain"
+                                    />
+
+                                    <View className="flex-col mb-8">
+                                        <Text className="text-[32px] font-bold text-center">
+                                            Welcome Back
+                                        </Text>
+                                        <Text className="text-[16px] text-center text-gray-600">
+                                            Sign in to access your account
+                                        </Text>
+                                    </View>
                                 </View>
 
                                 <View className="w-full items-center">
@@ -56,7 +62,7 @@ export default function LoginScreen() {
                                         style={{
                                             width: '90%',
                                             height: 50,
-                                            backgroundColor: '#f0f0f0',
+                                            backgroundColor: '#C4C4C4',
                                             borderColor: 'gray',
                                             borderRadius: 10,
                                             paddingHorizontal: 16,
@@ -69,7 +75,7 @@ export default function LoginScreen() {
                                         style={{
                                             width: '90%',
                                             height: 50,
-                                            backgroundColor: '#f0f0f0',
+                                            backgroundColor: '#C4C4C4',
                                             borderColor: 'gray',
                                             borderRadius: 10,
                                             paddingHorizontal: 16,
@@ -79,8 +85,9 @@ export default function LoginScreen() {
                                         placeholder="Password"
                                         secureTextEntry
                                     />
-                                    <View className='flex-row items-center justify-between w-full '>
-                                        <Text>
+
+                                    <View className='flex-row justify-between items-center w-full px-4 '>
+                                        <View className='flex-row items-center '>
                                             <Switch
                                                 trackColor={{ false: '#767577', true: '#81b0ff' }}
                                                 thumbColor={checked ? '#f5dd4b' : '#f4f3f4'}
@@ -88,13 +95,38 @@ export default function LoginScreen() {
                                                 onValueChange={toggleSwitch}
                                                 value={checked}
                                             />
-                                            <Text className='mb-[20px] text-gray-600'>
+                                            <Text className=' text-gray-600'>
                                                 Remember me
                                             </Text>
+                                        </View>
+                                        <Text className=' text-gray-600'>
+                                            Forgot Password?
+                                        </Text>
+                                    </View>
+
+                                </View>
+                                <View>
+                                    <TouchableOpacity>
+                                        <View className="bg-blue-500 w-[300px] h-[50px] items-center justify-center p-[10px]  rounded-lg mt-4">
+                                            <Text className="text-white text-lg font-semibold">
+                                                Login
+                                            </Text>
+                                        </View>
+                                    </TouchableOpacity>
+
+                                    <View>
+                                        <Text className="text-gray-600 mt-4 text-center">
+                                            New Member?{' '}
+                                            <Pressable
+                                                onPress={() => router.replace('/auth/signup')}
+                                            >
+                                                <Text className="text-blue-500 font-semibold">
+                                                    Register
+                                                </Text>
+                                            </Pressable>
                                         </Text>
                                     </View>
                                 </View>
-
                             </View>
                         </ScrollView>
                     </TouchableWithoutFeedback>
