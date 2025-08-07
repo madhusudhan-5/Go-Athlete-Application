@@ -17,6 +17,8 @@ import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import LoginLogo from '../../assets/images/login-image.png';// Make sure alias is resolved in tsconfig.json
+import { Ionicons } from '@expo/vector-icons';
+
 
 
 export default function LoginScreen() {
@@ -55,36 +57,25 @@ export default function LoginScreen() {
                                 </View>
 
                                 <View className="w-full items-center">
-                                    <TextInput
-                                        placeholder="Email"
-                                        keyboardType="email-address"
-                                        autoCapitalize="none"
-                                        style={{
-                                            width: '90%',
-                                            height: 50,
-                                            backgroundColor: '#C4C4C4',
-                                            borderColor: 'gray',
-                                            borderRadius: 10,
-                                            paddingHorizontal: 16,
-                                            marginBottom: 16,
-                                            paddingVertical: 18,
-                                        }}
-                                    />
 
-                                    <TextInput
-                                        style={{
-                                            width: '90%',
-                                            height: 50,
-                                            backgroundColor: '#C4C4C4',
-                                            borderColor: 'gray',
-                                            borderRadius: 10,
-                                            paddingHorizontal: 16,
-                                            marginBottom: 16,
-                                            paddingVertical: 18,
-                                        }}
-                                        placeholder="Password"
-                                        secureTextEntry
-                                    />
+                                    <View className="flex-row items-center bg-[#C4C4C4] rounded-lg mb-4 px-4 w-[90%] h-[50px]">
+                                        <TextInput
+                                            placeholder="Email"
+                                            keyboardType="email-address"
+                                            autoCapitalize="none"
+                                            style={{ flex: 1, paddingVertical: 0 }}
+                                        />
+                                        <Ionicons name="mail-outline" size={22} color="gray" />
+                                    </View>
+
+                                    <View className="flex-row items-center bg-[#C4C4C4] rounded-lg mb-4 px-4 w-[90%] h-[50px]">
+                                        <TextInput
+                                            placeholder="Password"
+                                            secureTextEntry
+                                            style={{ flex: 1, paddingVertical: 0 }}
+                                        />
+                                        <Ionicons name="lock-closed-outline" size={22} color="gray" />
+                                    </View>
 
                                     <View className='flex-row justify-between items-center w-full px-4 '>
                                         <View className='flex-row items-center '>
@@ -105,26 +96,27 @@ export default function LoginScreen() {
                                     </View>
 
                                 </View>
-                                <View>
-                                    <TouchableOpacity>
-                                        <View className="bg-blue-500 w-[300px] h-[50px] items-center justify-center p-[10px]  rounded-lg mt-4">
-                                            <Text className="text-white text-lg font-semibold">
-                                                Login
-                                            </Text>
-                                        </View>
+                                <View className='flex-col items-center justify-center w-full px-4  gap-[20px]'>
+                                    <TouchableOpacity
+                                        onPress={() => router.replace('/dashboard')}
+                                        className="bg-blue-500 w-[300px] h-[50px] items-center justify-center p-[10px] rounded-lg mt-4"
+                                    >
+                                        <Text className="text-white font-semibold text-base">
+                                            Login
+                                        </Text>
                                     </TouchableOpacity>
 
-                                    <View>
-                                        <Text className="text-gray-600 mt-4 text-center">
-                                            New Member?{' '}
-                                            <Pressable
-                                                onPress={() => router.replace('/auth/signup')}
-                                            >
-                                                <Text className="text-blue-500 font-semibold">
-                                                    Register
-                                                </Text>
-                                            </Pressable>
+                                    <View className='flex-row justify-center items-center gap-2  '>
+                                        <Text className="text-gray-600  text-center">
+                                            New Member? {' '}
                                         </Text>
+                                        <Pressable
+                                            onPress={() => router.replace('/auth/signup')}
+                                        >
+                                            <Text className="text-blue-500 font-semibold">
+                                                Register
+                                            </Text>
+                                        </Pressable>
                                     </View>
                                 </View>
                             </View>
