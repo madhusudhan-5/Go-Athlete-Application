@@ -7,19 +7,24 @@ import {
     ScrollView,
     Platform,
     TouchableWithoutFeedback,
+    TouchableOpacity,
     Keyboard,
     Switch,
+    Pressable,
 
 } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { useState } from 'react';
-import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import LoginLogo from '../../assets/images/login-image.png';// Make sure alias is resolved in tsconfig.json
+import { Ionicons } from '@expo/vector-icons';
+
 
 
 export default function LoginScreen() {
     const [checked, setChecked] = useState(false);
     const toggleSwitch = () => setChecked(previousState => !previousState);
+    const router = useRouter();
     return (
         <SafeAreaProvider>
             <SafeAreaView>
@@ -32,55 +37,48 @@ export default function LoginScreen() {
                             contentContainerStyle={{ flexGrow: 1 }}
                             keyboardShouldPersistTaps="handled"
                         >
-                            <View className="flex-col justify-evenly bg-blue-200 h-full  items-center px-4 ">
-                                <Image
-                                    source={LoginLogo}
-                                    className="w-[300px] h-[250px]"
-                                    resizeMode="contain"
-                                />
+                            <View className="flex-col justify-evenly  h-full  items-center px-4 ">
+                                <View className='items-center justify-center '>
 
-                                <View className="flex-col mb-8">
-                                    <Text className="text-[32px] font-bold text-center">
-                                        Welcome Back
-                                    </Text>
-                                    <Text className="text-[16px] text-center text-gray-600">
-                                        Sign in to access your account
-                                    </Text>
+                                    <Image
+                                        source={LoginLogo}
+                                        className="w-[300px] h-[250px] ml-[80px]"
+                                        resizeMode="contain"
+                                    />
+
+                                    <View className="flex-col mb-8">
+                                        <Text className="text-[32px] font-bold text-center">
+                                            Welcome Back
+                                        </Text>
+                                        <Text className="text-[16px] text-center text-gray-600">
+                                            Sign in to access your account
+                                        </Text>
+                                    </View>
                                 </View>
 
                                 <View className="w-full items-center">
-                                    <TextInput
-                                        placeholder="Email"
-                                        keyboardType="email-address"
-                                        autoCapitalize="none"
-                                        style={{
-                                            width: '90%',
-                                            height: 50,
-                                            backgroundColor: '#f0f0f0',
-                                            borderColor: 'gray',
-                                            borderRadius: 10,
-                                            paddingHorizontal: 16,
-                                            marginBottom: 16,
-                                            paddingVertical: 18,
-                                        }}
-                                    />
 
-                                    <TextInput
-                                        style={{
-                                            width: '90%',
-                                            height: 50,
-                                            backgroundColor: '#f0f0f0',
-                                            borderColor: 'gray',
-                                            borderRadius: 10,
-                                            paddingHorizontal: 16,
-                                            marginBottom: 16,
-                                            paddingVertical: 18,
-                                        }}
-                                        placeholder="Password"
-                                        secureTextEntry
-                                    />
-                                    <View className='flex-row items-center justify-between w-full '>
-                                        <Text>
+                                    <View className="flex-row items-center bg-[#C4C4C4] rounded-lg mb-4 px-4 w-[90%] h-[50px]">
+                                        <TextInput
+                                            placeholder="Email"
+                                            keyboardType="email-address"
+                                            autoCapitalize="none"
+                                            style={{ flex: 1, paddingVertical: 0 }}
+                                        />
+                                        <Ionicons name="mail-outline" size={22} color="gray" />
+                                    </View>
+
+                                    <View className="flex-row items-center bg-[#C4C4C4] rounded-lg mb-4 px-4 w-[90%] h-[50px]">
+                                        <TextInput
+                                            placeholder="Password"
+                                            secureTextEntry
+                                            style={{ flex: 1, paddingVertical: 0 }}
+                                        />
+                                        <Ionicons name="lock-closed-outline" size={22} color="gray" />
+                                    </View>
+
+                                    <View className='flex-row justify-between items-center w-full px-4 '>
+                                        <View className='flex-row items-center '>
                                             <Switch
                                                 trackColor={{ false: '#767577', true: '#81b0ff' }}
                                                 thumbColor={checked ? '#f5dd4b' : '#f4f3f4'}
@@ -88,13 +86,39 @@ export default function LoginScreen() {
                                                 onValueChange={toggleSwitch}
                                                 value={checked}
                                             />
-                                            <Text className='mb-[20px] text-gray-600'>
+                                            <Text className=' text-gray-600'>
                                                 Remember me
                                             </Text>
+                                        </View>
+                                        <Text className=' text-gray-600'>
+                                            Forgot Password?
                                         </Text>
                                     </View>
-                                </View>
 
+                                </View>
+                                <View className='flex-col items-center justify-center w-full px-4  gap-[20px]'>
+                                    <TouchableOpacity
+                                        onPress={() => router.replace('/dashboard')}
+                                        className="bg-blue-500 w-[300px] h-[50px] items-center justify-center p-[10px] rounded-lg mt-4"
+                                    >
+                                        <Text className="text-white font-semibold text-base">
+                                            Login
+                                        </Text>
+                                    </TouchableOpacity>
+
+                                    <View className='flex-row justify-center items-center gap-2  '>
+                                        <Text className="text-gray-600  text-center">
+                                            New Member? {' '}
+                                        </Text>
+                                        <Pressable
+                                            onPress={() => router.replace('/auth/signup')}
+                                        >
+                                            <Text className="text-blue-500 font-semibold">
+                                                Register
+                                            </Text>
+                                        </Pressable>
+                                    </View>
+                                </View>
                             </View>
                         </ScrollView>
                     </TouchableWithoutFeedback>
