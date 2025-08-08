@@ -1,0 +1,16 @@
+<changeSet id="1" author="you">
+    <createTable tableName="vendors">
+        <column name="vendor_id" type="BIGSERIAL">
+            <constraints primaryKey="true"/>
+        </column>
+        <column name="name" type="VARCHAR(255)"/>
+        <column name="email" type="VARCHAR(255)">
+            <constraints unique="true" nullable="false"/>
+        </column>
+        <column name="phone" type="VARCHAR(20)"/>
+        <column name="password_hash" type="VARCHAR(255)"/>
+        <column name="business_type" type="VARCHAR(50)"/>
+        <column name="verified" type="BOOLEAN"/>
+        <column name="status" type="VARCHAR(50)"/>
+    </createTable>
+</changeSet>
