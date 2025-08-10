@@ -3,26 +3,37 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://db.ojymzhgrlrxzhmjyahvp.supabase.co:5432/postgres
+    url: jdbc:postgresql://db.ojymzhgrlrxzhmjyahvp.supabase.co:5432/postgres?sslmode=require
     username: postgres
     password: 39syNrPuKF5AD0JZ
     driver-class-name: org.postgresql.Driver
-
+  security:
+    user:
+      name: admin
+      password: admin
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     show-sql: true
     properties:
       hibernate:
         format_sql: true
+        default_schema: go_athlete
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+     
 
-  graphql:
-    schema:
-      locations: classpath:graphql/
-    graphiql:
-      enabled: true
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.xml
+    drop-first: true
+    default-schema: go_athlete
 
 logging:
   level:
     org.springframework: INFO
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html

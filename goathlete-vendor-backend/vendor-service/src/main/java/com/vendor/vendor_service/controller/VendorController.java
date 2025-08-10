@@ -1,28 +1,30 @@
 package com.vendor.vendor_service.controller;
 
+import com.vendor.vendor_service.dto.VendorDTO;
 import com.vendor.vendor_service.entity.Vendor;
-import com.vendor.vendor_service.repository.VendorRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.graphql.data.method.annotation.Argument;
-import org.springframework.graphql.data.method.annotation.MutationMapping;
-import org.springframework.graphql.data.method.annotation.QueryMapping;
-import org.springframework.stereotype.Controller;
+import com.vendor.vendor_service.service.VendorService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Controller
+@RestController
+@RequestMapping("/api/vendors")
 public class VendorController {
 
-    @Autowired
-    private VendorRepository vendorRepository;
+    private final VendorService vendorService;
 
-    @QueryMapping
-    public List<Vendor> getAllVendors() {
-        return vendorRepository.findAll();
+    public VendorController(VendorService vendorService) {
+        this.vendorService = vendorService;
     }
 
-    @MutationMapping
-    public Vendor createVendor(@Argument("input") Vendor input) {
-        return vendorRepository.save(input);
+    @GetMapping
+    public ResponseEntity<List<Vendor>> getAllVendors() {
+        return ResponseEntity.ok(vendorService.getAllVendors());
+    }
+
+    @PostMapping
+    public ResponseEntity<Vendor> createVendor(@RequestBody VendorDTO vendorDTO) {
+        return ResponseEntity.ok(vendorService.createVendor(vendorDTO));
     }
 }

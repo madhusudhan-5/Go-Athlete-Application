@@ -1,4 +1,5 @@
 package com.vendor.vendor_service.entity;
+
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -6,22 +7,29 @@ import lombok.Data;
 @Table(name = "vendors")
 @Data
 public class Vendor {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "vendor_id")
     private Long vendorId;
 
+    @Column(nullable = false)
     private String name;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false, unique = true)
     private String email;
 
     private String phone;
 
+    @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
-    private String businessType; // VENUE, ECOMMERCE, BOTH
+    @Column(name = "business_type")
+    private String businessType;
 
-    private boolean verified;
+    @Column(nullable = false)
+    private Boolean verified = false;
 
-    private String status; // ACTIVE, INACTIVE, BLOCKED
+    @Column(nullable = false)
+    private String status = "ACTIVE";
 }
