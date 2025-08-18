@@ -15,7 +15,7 @@ import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Video, ResizeMode } from 'expo-av';
+import LottieView from 'lottie-react-native'; // Add this package if missing
 
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
@@ -31,26 +31,25 @@ export default function LoginScreen() {
 
   const router = useRouter();
 
-  // Animation refs for video fade/slide
+  // Animation refs for sports logo and header
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const translateAnim = useRef(new Animated.Value(30)).current;
+  const slideAnim = useRef(new Animated.Value(40)).current;
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
       toValue: 1,
-      duration: 1000,
+      duration: 800,
       useNativeDriver: true,
     }).start();
-
-    Animated.spring(translateAnim, {
+    Animated.spring(slideAnim, {
       toValue: 0,
-      friction: 5,
-      tension: 50,
       useNativeDriver: true,
+      friction: 6,
+      tension: 50,
     }).start();
   }, []);
 
-  // Google Auth
+  // Google Auth setup
   const [request, response, promptAsync] = Google.useAuthRequest({
     webClientId: 'YOUR_WEB_CLIENT_ID',
     iosClientId: 'YOUR_IOS_CLIENT_ID',
@@ -92,112 +91,141 @@ export default function LoginScreen() {
               contentContainerStyle={{ flexGrow: 1 }}
               keyboardShouldPersistTaps="handled"
             >
-              <View className="flex-col justify-start h-full items-center px-4 pt-4">
-
-                {/* Sports Video with Animation */}
+              <View style={{ flexDirection: 'column', justifyContent: 'flex-start', height: '100%', alignItems: 'center', paddingHorizontal: 20, paddingTop: 40 }}>
+                {/* Animated Sports Logo */}
                 <Animated.View
                   style={{
                     opacity: fadeAnim,
-                    transform: [{ translateY: translateAnim }],
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 4 },
-                    shadowOpacity: 0.3,
-                    shadowRadius: 5,
-                    elevation: 5,
-                    borderRadius: 20,
-                    borderWidth: 3,
-                    borderColor: '#fff',
-                    overflow: 'hidden',
+                    transform: [{ translateY: slideAnim }],
+                    marginBottom: 20,
+                    borderRadius: 40,
+                    elevation: 8,
                   }}
                 >
-                  <Video
-                    source={{
-                      uri: 'https://videos.pexels.com/video-files/2290072/2290072-hd_1920_1080_24fps.mp4',
-                    }}
-                    style={{
-                      width: 320,
-                      height: 180,
-                    }}
-                    resizeMode={ResizeMode.COVER}
-                    isLooping
-                    shouldPlay
-                    isMuted
+                  <LottieView
+                    source={require('../../assets/lottie/football-loader.json')} // Place Lottie JSON here
+                    autoPlay
+                    loop
+                    style={{ width: 110, height: 110 }}
                   />
                 </Animated.View>
 
                 {/* Welcome Text */}
-                <View className="flex-col mb-6 mt-6">
-                  <Text className="text-[28px] font-bold text-center text-black">
+                <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
+                  <Text style={{ fontSize: 30, fontWeight: 'bold', textAlign: 'center', color: '#222' }}>
                     Welcome Back
                   </Text>
-                  <Text className="text-[15px] text-center text-gray-600">
+                  <Text style={{ fontSize: 15, textAlign: 'center', marginBottom: 28, color: '#636363' }}>
                     Sign in to access your account
                   </Text>
-                </View>
+                </Animated.View>
 
                 {/* Email Input */}
-                <View className="flex-row items-center bg-gray-200 rounded-lg mb-4 px-4 w-[90%] h-[50px]">
+                <View style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  backgroundColor: '#F2F2F2',
+                  borderRadius: 16,
+                  marginBottom: 14,
+                  paddingHorizontal: 12,
+                  width: '100%',
+                  height: 50,
+                }}>
                   <TextInput
                     placeholder="Email"
                     value={email}
                     onChangeText={setEmail}
                     keyboardType="email-address"
                     autoCapitalize="none"
-                    style={{ flex: 1, paddingVertical: 0 }}
+                    style={{ flex: 1, paddingVertical: 0, fontSize: 16 }}
                   />
-                  <Ionicons name="mail-outline" size={22} color="gray" />
+                  <Ionicons name="mail-outline" size={22} color="#888" />
                 </View>
 
                 {/* Send OTP Button */}
                 {!showOtp && (
                   <TouchableOpacity
                     onPress={handleSendOtp}
-                    className="bg-blue-500 w-[300px] h-[45px] items-center justify-center rounded-lg mb-4"
+                    style={{
+                      backgroundColor: "#1877f2",
+                      width: '100%',
+                      height: 45,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      borderRadius: 12,
+                      marginBottom: 15,
+                      elevation: 3,
+                    }}
                   >
-                    <Text className="text-white font-semibold">Send OTP</Text>
+                    <Text style={{ color: "#fff", fontWeight: 'bold', fontSize: 16 }}>Send OTP</Text>
                   </TouchableOpacity>
                 )}
 
                 {/* OTP Input */}
                 {showOtp && (
                   <>
-                    <View className="flex-row items-center bg-gray-200 rounded-lg mb-4 px-4 w-[90%] h-[50px]">
+                    <View style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      backgroundColor: '#F2F2F2',
+                      borderRadius: 16,
+                      marginBottom: 14,
+                      paddingHorizontal: 12,
+                      width: '100%',
+                      height: 50,
+                    }}>
                       <TextInput
                         placeholder="Enter OTP"
                         value={otp}
                         onChangeText={setOtp}
                         keyboardType="numeric"
                         maxLength={6}
-                        style={{ flex: 1, paddingVertical: 0 }}
+                        style={{ flex: 1, paddingVertical: 0, fontSize: 16 }}
                       />
-                      <Ionicons name="key-outline" size={22} color="gray" />
+                      <Ionicons name="key-outline" size={22} color="#888" />
                     </View>
-
                     <TouchableOpacity
                       onPress={handleVerifyOtp}
-                      className="bg-green-500 w-[300px] h-[45px] items-center justify-center rounded-lg mb-4"
+                      style={{
+                        backgroundColor: "#34a853",
+                        width: '100%',
+                        height: 45,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        borderRadius: 12,
+                        marginBottom: 15,
+                        elevation: 3,
+                      }}
                     >
-                      <Text className="text-white font-semibold">Verify OTP</Text>
+                      <Text style={{ color: "#fff", fontWeight: 'bold', fontSize: 16 }}>Verify OTP</Text>
                     </TouchableOpacity>
                   </>
                 )}
 
                 {/* OR Divider */}
-                <View className="flex-row items-center my-2 w-[80%]">
-                  <View className="flex-1 h-[1px] bg-gray-400" />
-                  <Text className="mx-2 text-gray-500">OR</Text>
-                  <View className="flex-1 h-[1px] bg-gray-400" />
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 10, width: '80%' }}>
+                  <View style={{ flex: 1, height: 1, backgroundColor: '#CCC' }} />
+                  <Text style={{ marginHorizontal: 7, color: '#AAA' }}>OR</Text>
+                  <View style={{ flex: 1, height: 1, backgroundColor: '#CCC' }} />
                 </View>
 
                 {/* Social Login Row */}
-                <View className="flex-row gap-4 mt-2">
-                  {/* Google */}
+                <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 18, marginTop: 10 }}>
+                  {/* Google Login */}
                   <TouchableOpacity
                     onPress={() => promptAsync()}
                     disabled={!request}
-                    className="bg-white p-3 rounded-full border border-gray-300"
+                    style={{
+                      backgroundColor: '#fff',
+                      padding: 12,
+                      borderRadius: 30,
+                      borderWidth: 1,
+                      borderColor: '#eee',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      elevation: 2,
+                    }}
                   >
-                    {/* Google logo with default colors */}
                     <View style={{ width: 24, height: 24 }}>
                       <Svg width={24} height={24} viewBox="0 0 24 24">
                         <G>
@@ -222,12 +250,12 @@ export default function LoginScreen() {
                     </View>
                   </TouchableOpacity>
 
-                  {/* Apple */}
+                  {/* Apple Login (iOS only) */}
                   {Platform.OS === 'ios' && (
                     <AppleAuthentication.AppleAuthenticationButton
                       buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
                       buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
-                      cornerRadius={50}
+                      cornerRadius={30}
                       style={{ width: 50, height: 50 }}
                       onPress={async () => {
                         try {
@@ -237,10 +265,14 @@ export default function LoginScreen() {
                               AppleAuthentication.AppleAuthenticationScope.EMAIL,
                             ],
                           });
-                          console.log('Apple Auth:', credential);
                           router.replace('/dashboard');
                         } catch (e) {
-                          if (typeof e === 'object' && e !== null && 'code' in e && (e as { code?: string }).code !== 'ERR_CANCELED') {
+                          if (
+                            typeof e === 'object' &&
+                            e !== null &&
+                            'code' in e &&
+                            (e).code !== 'ERR_CANCELED'
+                          ) {
                             console.error(e);
                           }
                         }
