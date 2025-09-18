@@ -17,7 +17,8 @@ export default function OnboardingScreen() {
 
     const goNext = () => {
         if (currentIndex === slides.length - 1) {
-            router.replace('/auth/login');
+            // Navigate to profile setup for new users or dashboard for existing users
+            router.replace('/dashboard');
         } else {
             flatListRef.current?.scrollToIndex({ index: currentIndex + 1 });
         }
