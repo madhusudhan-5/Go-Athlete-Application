@@ -284,15 +284,12 @@ export default function OTPVerificationScreen() {
       
       // Store token and user data
       apiService.setToken(data.access_token);
+      await AsyncStorage.setItem('auth_token', data.access_token);
+      await AsyncStorage.setItem('refresh_token', data.refresh_token);
       console.log('Authentication successful:', data);
       
-      if (data.is_new_user) {
-        // Navigate to onboarding or profile setup
-        router.replace('/onboarding');
-      } else {
-        // Navigate to dashboard
-        router.replace('/dashboard');
-      }
+      // Use useAuth hook to handle navigation
+      await login(data.access_token);
     } catch (error) {
       console.error('OTP verification error:', error);
       Alert.alert('Error', 'Network error. Please check your connection and try again.');

@@ -1,44 +1,40 @@
-import { Tabs } from "expo-router";
+import { Tabs, Stack } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 
-
-// Component for Dashboard Tab Layout
 export default function DashboardLayout() {
     return (
-        <Tabs
-            screenOptions={{
-                tabBarActiveTintColor: "#000",
-                tabBarLabelStyle: { fontSize: 12 },
-                headerShown: false,
-            }}
-        >
-            <Tabs.Screen
-                name="index"
+        <Stack>
+            <Stack.Screen
+                name="(tabs)"
                 options={{
-                    title: "Home",
-                    tabBarIcon: ({ color, size }: { color: string; size: number }) => (
-                        <Ionicons name="home" color={color} size={size} />
-                    ),
+                    headerShown: false,
                 }}
             />
-            <Tabs.Screen
-                name="profile"
+            <Stack.Screen
+                name="court-registration"
                 options={{
-                    title: "Profile",
-                    tabBarIcon: ({ color, size }: { color: string; size: number }) => (
-                        <Ionicons name="person" color={color} size={size} />
-                    ),
+                    presentation: 'modal',
+                    headerShown: false,
                 }}
             />
-            <Tabs.Screen
-                name="settings"
+            <Stack.Screen
+                name="court-management"
                 options={{
-                    title: "Settings",
-                    tabBarIcon: ({ color, size }: { color: string; size: number }) => (
-                        <Ionicons name="settings" color={color} size={size} />
-                    ),
+                    title: 'Manage Courts',
                 }}
             />
-        </Tabs>
+            <Stack.Screen
+                name="analytics"
+                options={{
+                    title: 'Analytics',
+                }}
+            />
+            <Stack.Screen
+                name="offers"
+                options={{
+                    title: 'Manage Offers',
+                }}
+            />
+        </Stack>
     );
 }
