@@ -1,4 +1,5 @@
 import { Stack } from "expo-router";
+import '../polyfill';
 import './global.css';
 
 export default function RootLayout() {
@@ -16,5 +17,4 @@ export default function RootLayout() {
       <Stack.Screen name="/dashboard" options={{ headerShown: false }} />
     </Stack>
   );
-}
 }

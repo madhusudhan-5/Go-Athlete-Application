@@ -66,10 +66,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_verified = models.BooleanField(default=False, help_text="Email/Phone verified")
-    is_2fa_enabled = models.BooleanField(default=False)
-    
-    # 2FA secret (should be encrypted at application level)
-    _2fa_secret = models.CharField(max_length=255, null=True, blank=True, help_text="TOTP secret for 2FA (encrypted)")
     
     # Account security
     login_attempts = models.IntegerField(default=0)

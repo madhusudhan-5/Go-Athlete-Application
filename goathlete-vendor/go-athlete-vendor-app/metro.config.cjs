@@ -4,7 +4,6 @@ const { withNativeWind } = require("nativewind/metro");
 
 const config = getDefaultConfig(__dirname);
 
-// Add SVG transformer config
 config.transformer = {
   ...config.transformer,
   babelTransformerPath: require.resolve("react-native-svg-transformer"),
@@ -15,6 +14,4 @@ config.resolver = {
   sourceExts: [...config.resolver.sourceExts, "svg"],
 };
 
-// NativeWind input file (Tailwind CSS config)
 module.exports = withNativeWind(config, { input: "./app/global.css" });
-// Export the modified config

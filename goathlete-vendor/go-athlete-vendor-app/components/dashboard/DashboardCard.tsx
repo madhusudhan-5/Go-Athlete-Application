@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { styled } from 'nativewind/styled';
+import { styled } from 'nativewind'; // ✅ FIXED IMPORT
 
 interface DashboardCardProps {
   title: string;

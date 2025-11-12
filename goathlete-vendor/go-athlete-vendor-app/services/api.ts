@@ -158,13 +158,12 @@ class ApiService {
     });
   }
 
-  async login(email: string, password: string, twoFaCode?: string): Promise<AuthResponse> {
+  async login(email: string, password: string): Promise<AuthResponse> {
     return this.request('/auth/login/', {
       method: 'POST',
       body: JSON.stringify({ 
         email: email.toLowerCase(),
-        password,
-        ...(twoFaCode && { '2fa_code': twoFaCode })
+        password
       }),
     });
   }

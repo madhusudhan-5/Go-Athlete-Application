@@ -176,7 +176,6 @@ class AuthViewSet(viewsets.ViewSet):
         """Login with email and password"""
         email = request.data.get('email', '').lower().strip()
         password = request.data.get('password', '')
-        two_fa_code = request.data.get('2fa_code', '')
 
         if not email or not password:
             return Response(
@@ -236,16 +235,6 @@ class AuthViewSet(viewsets.ViewSet):
                 {'error': 'Invalid email or password'},
                 status=status.HTTP_401_UNAUTHORIZED
             )
-
-        # Check 2FA if enabled
-        if user.is_2fa_enabled:
-            if not two_fa_code:
-                return Response(
-                    {'error': '2FA code required', 'requires_2fa': True},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            # TODO: Verify 2FA code
-            # For now, accept any 6-digit code
 
         # Generate tokens
         refresh = RefreshToken.for_user(user)
@@ -348,7 +337,6 @@ class AuthViewSet(viewsets.ViewSet):
             'phone_number': user.phone_number,
             'avatar_url': user.avatar_url,
             'is_verified': user.is_verified,
-            'is_2fa_enabled': user.is_2fa_enabled,
             'vendor_profile': vendor_profile
         }, status=status.HTTP_200_OK)
 

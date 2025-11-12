@@ -27,9 +27,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     
     # Third party apps
-    'django_otp',
-    'django_otp.plugins.otp_totp',
-    'two_factor',
     'simple_history',
     'guardian',
     'crispy_forms',
@@ -56,7 +53,6 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django_otp.middleware.OTPMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'simple_history.middleware.HistoryRequestMiddleware',
@@ -130,10 +126,10 @@ AUTHENTICATION_BACKENDS = (
     'guardian.backends.ObjectPermissionBackend',
 )
 
-# 2FA Configuration
-LOGIN_URL = 'two_factor:login'
+# Authentication Configuration
+LOGIN_URL = '/admin/login/'
 LOGIN_REDIRECT_URL = 'admin:index'
-LOGOUT_REDIRECT_URL = 'two_factor:login'
+LOGOUT_REDIRECT_URL = '/admin/login/'
 
 # Internationalization
 LANGUAGE_CODE = 'en-us'

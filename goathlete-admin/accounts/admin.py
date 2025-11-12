@@ -7,8 +7,8 @@ from guardian.admin import GuardedModelAdmin
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin, GuardedModelAdmin):
-    list_display = ('email', 'first_name', 'last_name', 'role', 'is_active', 'is_2fa_enabled')
-    list_filter = ('role', 'is_active', 'is_2fa_enabled')
+    list_display = ('email', 'first_name', 'last_name', 'role', 'is_active', 'is_verified')
+    list_filter = ('role', 'is_active', 'is_verified')
     search_fields = ('email', 'first_name', 'last_name')
     ordering = ('email',)
     
@@ -16,7 +16,7 @@ class UserAdmin(BaseUserAdmin, GuardedModelAdmin):
         (None, {'fields': ('email', 'password')}),
         (_('Personal info'), {'fields': ('first_name', 'last_name')}),
         (_('Permissions'), {
-            'fields': ('role', 'is_active', 'is_staff', 'is_superuser', 'is_2fa_enabled', 'groups', 'user_permissions'),
+            'fields': ('role', 'is_active', 'is_staff', 'is_superuser', 'is_verified', 'groups', 'user_permissions'),
         }),
         (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
     )
@@ -24,7 +24,7 @@ class UserAdmin(BaseUserAdmin, GuardedModelAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'password1', 'password2', 'role', 'is_2fa_enabled'),
+            'fields': ('email', 'password1', 'password2', 'role', 'is_verified'),
         }),
     )
 
