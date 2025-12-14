@@ -1,0 +1,325 @@
+{% extends 'admin_console/base.html' %}
+
+{% block title %}Dashboard - Admin Console{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    {% if user_role == 'SUPER_ADMIN' %}
+    <div class="bg-surface rounded-2xl p-6 card">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-500 text-sm">Total Vendors</p>
+                <p class="text-3xl font-bold text-primary mt-1">{{ stats.total_vendors|default:0 }}</p>
+            </div>
+            <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                <span class="text-2xl">🏪</span>
+            </div>
+        </div>
+        <p class="text-green-600 text-sm mt-3">+{{ stats.new_vendors|default:0 }} this month</p>
+    </div>
+    <div class="bg-surface rounded-2xl p-6 card">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-500 text-sm">Total Revenue</p>
+                <p class="text-3xl font-bold text-primary mt-1">₹{{ stats.total_revenue|default:0 }}</p>
+            </div>
+            <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                <span class="text-2xl">💰</span>
+            </div>
+        </div>
+        <p class="text-green-600 text-sm mt-3">+12% vs last month</p>
+    </div>
+    <div class="bg-surface rounded-2xl p-6 card">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-500 text-sm">Active Offers</p>
+                <p class="text-3xl font-bold text-primary mt-1">{{ stats.active_offers|default:0 }}</p>
+            </div>
+            <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
+                <span class="text-2xl">🎁</span>
+            </div>
+        </div>
+        <p class="text-gray-500 text-sm mt-3">{{ stats.total_offers|default:0 }} total offers</p>
+    </div>
+    <div class="bg-surface rounded-2xl p-6 card">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-500 text-sm">Admin Users</p>
+                <p class="text-3xl font-bold text-primary mt-1">{{ stats.admin_count|default:0 }}</p>
+            </div>
+            <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                <span class="text-2xl">👥</span>
+            </div>
+        </div>
+        <p class="text-gray-500 text-sm mt-3">Active accounts</p>
+    </div>
+    {% else %}
+    <div class="bg-surface rounded-2xl p-6 card">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-500 text-sm">Pending Approvals</p>
+                <p class="text-3xl font-bold text-primary mt-1">{{ stats.pending_vendors|default:0 }}</p>
+            </div>
+            <div class="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center">
+                <span class="text-2xl">⏳</span>
+            </div>
+        </div>
+        <p class="text-secondary text-sm mt-3">Requires attention</p>
+    </div>
+    <div class="bg-surface rounded-2xl p-6 card">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-500 text-sm">Today's Bookings</p>
+                <p class="text-3xl font-bold text-primary mt-1">{{ stats.today_bookings|default:0 }}</p>
+            </div>
+            <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                <span class="text-2xl">📅</span>
+            </div>
+        </div>
+        <p class="text-green-600 text-sm mt-3">{{ stats.total_bookings|default:0 }} total</p>
+    </div>
+    <div class="bg-surface rounded-2xl p-6 card">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-500 text-sm">Open Tickets</p>
+                <p class="text-3xl font-bold text-primary mt-1">{{ stats.open_tickets|default:0 }}</p>
+            </div>
+            <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
+                <span class="text-2xl">🎫</span>
+            </div>
+        </div>
+        <p class="text-gray-500 text-sm mt-3">{{ stats.total_tickets|default:0 }} total tickets</p>
+    </div>
+    <div class="bg-surface rounded-2xl p-6 card">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-500 text-sm">Total Customers</p>
+                <p class="text-3xl font-bold text-primary mt-1">{{ stats.total_customers|default:0 }}</p>
+            </div>
+            <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                <span class="text-2xl">👤</span>
+            </div>
+        </div>
+        <p class="text-green-600 text-sm mt-3">+{{ stats.new_customers|default:0 }} this week</p>
+    </div>
+    {% endif %}
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <div class="bg-surface rounded-2xl p-6 card">
+        <h3 class="text-lg font-semibold text-primary mb-4">Revenue Trend (Last 7 Days)</h3>
+        <div style="height: 300px;">
+            <canvas id="revenueChart"></canvas>
+        </div>
+    </div>
+    
+    <div class="bg-surface rounded-2xl p-6 card">
+        <h3 class="text-lg font-semibold text-primary mb-4">Bookings by Status</h3>
+        <div style="height: 300px;">
+            <canvas id="bookingsChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+    <div class="bg-surface rounded-2xl p-6 card">
+        <h3 class="text-lg font-semibold text-primary mb-4">Vendor Distribution</h3>
+        <div style="height: 250px;">
+            <canvas id="vendorTypeChart"></canvas>
+        </div>
+    </div>
+    
+    <div class="bg-surface rounded-2xl p-6 card lg:col-span-2">
+        <h3 class="text-lg font-semibold text-primary mb-4">Monthly Bookings Trend</h3>
+        <div style="height: 250px;">
+            <canvas id="monthlyBookingsChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="bg-surface rounded-2xl p-6 card mb-8">
+    <h3 class="text-lg font-semibold text-primary mb-4">Quick Actions</h3>
+    <div class="flex flex-wrap gap-3">
+        {% if user_role == 'SUPER_ADMIN' %}
+        <a href="{% url 'console-global-config' %}" class="bg-primary text-white px-6 py-3 rounded-xl font-medium hover:bg-opacity-90 transition">
+            ⚙️ Edit Global Config
+        </a>
+        <a href="{% url 'console-offers' %}" class="bg-secondary text-white px-6 py-3 rounded-xl font-medium hover:bg-opacity-90 transition">
+            🎁 Manage Offers
+        </a>
+        <a href="{% url 'console-admin-users' %}" class="bg-gray-100 text-primary px-6 py-3 rounded-xl font-medium hover:bg-gray-200 transition">
+            👥 Admin Users
+        </a>
+        <a href="/api/docs/" target="_blank" class="bg-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-opacity-90 transition">
+            📚 API Documentation
+        </a>
+        {% else %}
+        <a href="{% url 'console-vendors' %}" class="bg-primary text-white px-6 py-3 rounded-xl font-medium hover:bg-opacity-90 transition">
+            🏪 Review Vendors
+        </a>
+        <a href="{% url 'console-bookings' %}" class="bg-secondary text-white px-6 py-3 rounded-xl font-medium hover:bg-opacity-90 transition">
+            📅 View Bookings
+        </a>
+        <a href="{% url 'console-tickets' %}" class="bg-gray-100 text-primary px-6 py-3 rounded-xl font-medium hover:bg-gray-200 transition">
+            🎫 Support Tickets
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="bg-surface rounded-2xl p-6 card">
+    <h3 class="text-lg font-semibold text-primary mb-4">Recent Activity</h3>
+    <div class="space-y-4">
+        {% for log in recent_logs %}
+        <div class="flex items-center gap-4 p-3 bg-gray-50 rounded-xl">
+            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                <span>📝</span>
+            </div>
+            <div class="flex-1">
+                <p class="text-sm font-medium text-primary">{{ log.action }}</p>
+                <p class="text-xs text-gray-500">{{ log.created_at|timesince }} ago</p>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-gray-500 text-center py-8">No recent activity</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chartColors = {
+        primary: '#061A2C',
+        secondary: '#D96A23',
+        success: '#2E7D32',
+        warning: '#F9A825',
+        error: '#B3261E',
+        blue: '#2196F3',
+        purple: '#9C27B0',
+    };
+    
+    const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+    new Chart(revenueCtx, {
+        type: 'line',
+        data: {
+            labels: {{ chart_data.revenue_labels|safe|default:"['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']" }},
+            datasets: [{
+                label: 'Revenue (₹)',
+                data: {{ chart_data.revenue_data|safe|default:"[12500, 19200, 15300, 22100, 18700, 25800, 21300]" }},
+                borderColor: chartColors.secondary,
+                backgroundColor: 'rgba(217, 106, 35, 0.1)',
+                fill: true,
+                tension: 0.4,
+                pointRadius: 6,
+                pointBackgroundColor: chartColors.secondary,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '₹' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    const bookingsCtx = document.getElementById('bookingsChart').getContext('2d');
+    new Chart(bookingsCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Confirmed', 'Completed', 'Pending', 'Cancelled'],
+            datasets: [{
+                data: {{ chart_data.bookings_by_status|safe|default:"[45, 30, 15, 10]" }},
+                backgroundColor: [
+                    chartColors.success,
+                    chartColors.blue,
+                    chartColors.warning,
+                    chartColors.error
+                ],
+                borderWidth: 0,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { usePointStyle: true, padding: 20 }
+                }
+            },
+            cutout: '60%'
+        }
+    });
+    
+    const vendorTypeCtx = document.getElementById('vendorTypeChart').getContext('2d');
+    new Chart(vendorTypeCtx, {
+        type: 'pie',
+        data: {
+            labels: ['Venue', 'Coach', 'E-commerce', 'Mixed'],
+            datasets: [{
+                data: {{ chart_data.vendor_types|safe|default:"[40, 25, 20, 15]" }},
+                backgroundColor: [
+                    chartColors.primary,
+                    chartColors.secondary,
+                    chartColors.blue,
+                    chartColors.purple
+                ],
+                borderWidth: 0,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { usePointStyle: true, padding: 15 }
+                }
+            }
+        }
+    });
+    
+    const monthlyCtx = document.getElementById('monthlyBookingsChart').getContext('2d');
+    new Chart(monthlyCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ chart_data.monthly_labels|safe|default:"['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']" }},
+            datasets: [{
+                label: 'Bookings',
+                data: {{ chart_data.monthly_bookings|safe|default:"[120, 150, 180, 210, 195, 240]" }},
+                backgroundColor: chartColors.primary,
+                borderRadius: 8,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

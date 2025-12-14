@@ -1,0 +1,503 @@
+Build a complete ADMIN web application using:
+
+Frontend: React (web, responsive)
+Backend: Django REST Framework
+Design System: Material Design 3 (MD3)
+Color palette:
+  primary: #0A1F35
+  secondary: #DA6F2B
+  darkPrimary: #030929
+  use MD3 greys, black, white for surfaces
+Light + Dark mode (user-toggle in settings), persist preference
+Responsive for desktop / tablet / mobile
+
+The ADMIN app sits BETWEEN Vendor app and Super Admin:
+- SUPER ADMIN is highest and can manage Admins + global platform
+- ADMIN manages Vendors, KYC, commissions, offers, promotions, bookings oversight, memberships, payouts, tickets, reports, analytics
+- Vendor uses Vendor App only
+
+========================================
+AUTH & ROLES (ADMIN)
+========================================
+Backend:
+- Use Django + DRF with token/JWT auth
+- Admin user model (AdminUser) linked to Django User with:
+  can_manage_vendors (bool)
+  can_manage_commissions (bool)
+  can_manage_offers (bool)
+  can_manage_bookings (bool)
+  can_manage_tickets (bool)
+  can_manage_reports (bool)
+  can_manage_memberships (bool)
+  can_manage_payouts (bool)
+
+Frontend:
+- Login page at /admin/login
+  Fields: email, password
+  Validations: required, email format
+  POST /api/admin/auth/login/
+  On success: store token, load /admin/dashboard
+- Protect all /admin/* routes, redirect unauthenticated to /admin/login
+
+========================================
+GLOBAL UI/UX REQUIREMENTS
+========================================
+Use MD3:
+- Top AppBar
+- Left Navigation Rail / Drawer (collapsible on smaller screens)
+- MD3 Cards, DataTables, Buttons, TextFields, Chips, Dialogs, Sheets
+- Elevation levels (1 cards, 2 hover, 3 dialogs)
+- Ripple effects
+- Skeleton loaders for lists
+- Smooth, minimal animations (fade, slide, scale 0.97 press)
+- Light and Dark themes with theme toggle in Admin Profile
+
+Global navigation layout:
+- Left nav items:
+  Dashboard
+  Vendors
+  KYC
+  Bookings
+  Memberships
+  Payouts
+  Offers & Promotions
+  Products (overview)
+  Coaches (overview)
+  Tickets
+  Reports & Analytics
+  Settings / Profile
+
+Responsive rules:
+- >1280px: full sidebar + main content
+- 768–1280: mini rail + overlay drawer
+- <768: top AppBar + hamburger drawer
+
+========================================
+DASHBOARD (ADMIN)
+========================================
+Route: /admin/dashboard
+
+Show customizable dashboard widgets (Admin can show/hide/reorder):
+
+KPIs:
+- total_vendors
+- active_vendors
+- pending_vendor_approvals
+- pending_kyc
+- open_tickets
+- today_bookings
+- today_revenue (platform-level, before and after commission)
+- today_ecom_orders
+- today_membership_sales
+
+Charts:
+- bookings_last_7_days
+- revenue_last_7_days
+- ecom_sales_last_7_days
+- coaching_sessions_last_7_days
+
+Lists:
+- latest 10 vendor registrations (name, type, status)
+- latest 10 tickets (subject, severity, status)
+- latest 10 bookings (venue, court, vendor, status)
+
+Use MD3:
+- KPI cards with icons
+- Line/Bar charts (lightweight)
+- Table-like lists
+- Loader states while fetching
+
+Backend endpoint:
+GET /api/admin/summary/
+Return JSON with all KPI + chart aggregates
+
+========================================
+VENDOR MANAGEMENT
+========================================
+Route: /admin/vendors, /admin/vendors/:id
+
+Backend models (brief):
+Vendor:
+  id
+  first_name
+  last_name
+  owner_name
+  business_name
+  roles (array: VENUE, COACH, ECOM)
+  email
+  phone
+  address
+  city
+  state
+  pincode
+  id_proofs (list of URLs, at least 2)
+  license_docs (list of URLs)
+  status (PENDING, APPROVED, REJECTED, SUSPENDED)
+  rejection_reason
+  created_at
+  updated_at
+
+Endpoints:
+- GET /api/admin/vendors/?status=&role=&search=
+- GET /api/admin/vendors/:id/
+- POST /api/admin/vendors/:id/approve/
+- POST /api/admin/vendors/:id/reject/ (payload: {reason})
+- POST /api/admin/vendors/:id/suspend/ (payload: {reason})
+- POST /api/admin/vendors/:id/activate/
+
+Validation:
+- Approve only if status=PENDING or REJECTED
+- Reject requires reason with min length 10
+- Suspend requires reason
+
+Frontend:
+- Vendor list with filters:
+  status chips (ALL, PENDING, APPROVED, REJECTED, SUSPENDED)
+  role filters (VENUE, COACH, ECOM)
+  search by name/email/phone
+- Vendor row shows:
+  business name, roles, city, status badge
+- Click row → Vendor Detail:
+  basic info
+  roles
+  docs preview (id_proofs, license_docs)
+  quick summary: venues, courts, products, coaches, bookings, revenue, commission paid
+  action buttons: Approve, Reject, Suspend, Activate
+- Use MD3 dialogs for Reject/Suspend to capture reason
+- Show success toasts and update UI state
+
+========================================
+KYC MANAGEMENT
+========================================
+Route: /admin/kyc, /admin/kyc/:id
+
+Model:
+VendorKYC:
+  vendor (FK)
+  pan_number
+  pan_doc_url
+  aadhaar_doc_url
+  gst_number
+  gst_doc_url
+  bank_doc_url
+  status (PENDING, VERIFIED, REJECTED)
+  rejection_reason
+  submitted_at
+  verified_at
+
+Endpoints:
+- GET /api/admin/kyc/?status=
+- GET /api/admin/kyc/:id/
+- POST /api/admin/kyc/:id/verify/
+- POST /api/admin/kyc/:id/reject/ (reason)
+
+Validation:
+- PAN format regex
+- GST format regex
+- Reject requires reason
+- Verify only if all mandatory docs present
+
+Frontend:
+- List of KYC entries with status filter chips
+- Detail view:
+  show documents with preview
+  vendor info (link to vendor detail)
+  buttons: VERIFY, REJECT
+  MD3 dialogs for confirmation
+
+========================================
+COMMISSION CONFIG (CRITICAL)
+========================================
+Admin configures commission for:
+- court_bookings_commission_pct
+- coaching_commission_pct
+- ecommerce_commission_pct
+- membership_commission_pct
+
+Model:
+CommissionConfig:
+  court_pct (0–100)
+  coach_pct (0–100)
+  ecommerce_pct (0–100)
+  membership_pct (0–100)
+  effective_from
+  created_by (AdminUser)
+
+Endpoint:
+- GET /api/admin/commission-config/
+- PATCH /api/admin/commission-config/
+
+Validation:
+- 0 <= pct <= 100
+
+UI:
+- Route: /admin/settings/commissions
+- MD3 form with sliders/number inputs
+- Show preview of vendor earnings vs commission on sample values
+- Save → success toast
+
+========================================
+OFFERS & PROMOTIONS MANAGEMENT
+========================================
+Admin defines offers that VENDORS can only select (not edit):
+
+Model:
+Offer:
+  name
+  description
+  discount_type (PERCENT, FLAT)
+  value
+  max_discount_amount (optional)
+  target_type (VENUE, COURT, PRODUCT, COACH, MEMBERSHIP)
+  status (DRAFT, ACTIVE, EXPIRED)
+  valid_from
+  valid_to
+
+Endpoints:
+- GET /api/admin/offers/?status=
+- POST /api/admin/offers/
+- GET /api/admin/offers/:id/
+- PATCH /api/admin/offers/:id/
+- POST /api/admin/offers/:id/activate/
+- POST /api/admin/offers/:id/deactivate/
+
+UI:
+- /admin/offers
+  list offers with filters
+  MD3 cards with status chips
+  "Create Offer" button → form in dialog or separate page
+- Validations:
+  value > 0
+  if discount_type=PERCENT then value <= 100
+  valid_to > valid_from
+
+Promotions:
+- Admin-level promotions (higher-level campaigns)
+Similar structure, with ability to attach offers to campaigns (optional).
+
+========================================
+BOOKINGS OVERSIGHT
+========================================
+Models use Vendor’s booking data; Admin only oversees.
+
+Endpoints:
+- GET /api/admin/bookings/?date=&vendor_id=&venue_id=&status=
+- GET /api/admin/bookings/:id/
+- PATCH /api/admin/bookings/:id/ (change status: CONFIRMED, CANCELLED, COMPLETED, NO_SHOW)
+- POST /api/admin/bookings/:id/refund/ (payload: amount, reason)
+
+Validations:
+- Cannot cancel if already COMPLETED unless “force flag” (optional)
+- Refund amount <= booking price
+
+UI:
+- Route: /admin/bookings
+  filters:
+    date range
+    vendor
+    status chips
+  MD3 table list
+- /admin/bookings/:id
+  show:
+    vendor, venue, court, timeslot
+    customer name/phone
+    price, commission, vendor earning
+    membership info if applicable
+  actions:
+    change status (with reason where needed)
+    trigger refund
+  Confirmation dialogs for critical actions
+
+========================================
+MEMBERSHIP OVERSIGHT
+========================================
+Admin can view and audit all memberships sold through vendors.
+
+Endpoints:
+- GET /api/admin/memberships/?vendor_id=&status=&duration=
+- GET /api/admin/memberships/:id/
+
+Show:
+- member name
+- vendor/venue
+- duration type (1/3/6/8 months)
+- start/end dates
+- price
+- commission applied
+- status (ACTIVE, EXPIRED, CANCELLED)
+
+UI:
+- /admin/memberships: table + filters
+- detail page with all info
+
+========================================
+PAYOUTS MANAGEMENT
+========================================
+Admin controls and tracks vendor payouts.
+
+Model:
+Payout:
+  vendor
+  amount
+  commission_amount
+  status (PENDING, PROCESSING, PAID, FAILED)
+  requested_at
+  processed_at
+  method (BANK_TRANSFER, MANUAL)
+  reference_id
+  notes
+
+Endpoints:
+- GET /api/admin/payouts/?status=&vendor_id=
+- GET /api/admin/payouts/:id/
+- POST /api/admin/payouts/:id/mark-processing/
+- POST /api/admin/payouts/:id/mark-paid/ (payload: reference_id)
+- POST /api/admin/payouts/:id/mark-failed/ (payload: reason)
+
+UI:
+- /admin/payouts: table with filters
+- detail view, actions, status change dialogues
+
+========================================
+TICKETS / SUPPORT
+========================================
+Model:
+Ticket:
+  id
+  created_by_type (VENDOR, CUSTOMER, SYSTEM)
+  created_by_id
+  subject
+  description
+  severity (LOW, MEDIUM, HIGH, CRITICAL)
+  status (OPEN, IN_PROGRESS, RESOLVED, ESCALATED)
+  assigned_to (AdminUser)
+  created_at
+  updated_at
+
+Endpoints:
+- GET /api/admin/tickets/?status=&severity=&assigned_to=
+- GET /api/admin/tickets/:id/
+- POST /api/admin/tickets/:id/assign/ (payload: admin_id or "me")
+- POST /api/admin/tickets/:id/update-status/ (payload: status)
+- POST /api/admin/tickets/:id/add-note/ (payload: text)
+
+UI:
+- /admin/tickets:
+  list table with color-coded severity chips
+  filters for status and severity
+- /admin/tickets/:id:
+  show conversation/notes timeline
+  change status
+  assign
+  add notes
+
+========================================
+ANALYTICS & REPORTS
+========================================
+Route: /admin/reports
+
+Endpoints:
+- GET /api/admin/reports/summary?from=&to=
+  bookings_count
+  cancellations_count
+  total_revenue
+  commission_collected
+  vendor_payouts
+- GET /api/admin/reports/vendors-top?from=&to=
+- GET /api/admin/reports/products-top?from=&to=
+- (Optional) GET /api/admin/reports/export?from=&to=&type=csv
+
+UI:
+- Use MD3 cards + charts
+- Top vendors by revenue
+- Top venues, courts, products, coaches
+- Provide “Export CSV” button
+
+========================================
+ADVANCED SEARCH & FILTER
+========================================
+Global search bar in top app bar:
+- search across vendors, bookings, tickets
+- suggestions dropdown
+- clicking result → navigate to proper detail
+
+Filters with MD3 filter chips and dropdowns.
+
+========================================
+PUSH NOTIFICATIONS (ADMIN)
+========================================
+Admin receives web notifications for:
+- new high severity ticket
+- unusually high cancellations
+- large payout request
+Use simple web push or placeholder.
+
+========================================
+SETTINGS & PROFILE
+========================================
+Route: /admin/settings/profile
+
+Fields:
+- name
+- email (readonly by default)
+- phone
+- theme preference (light/dark/system)
+- notification preferences (toggle: bookings, payouts, tickets)
+
+Allow password change page with validations.
+
+========================================
+LIGHT / DARK MODE
+========================================
+Implement MD3 light + dark theme:
+- palette switching
+- surfaces, backgrounds, text colors adapt
+- store preference per Admin in backend or localStorage
+
+========================================
+INTEGRATION WITH VENDOR APP
+========================================
+Admin APIs must align with Vendor app:
+- vendor status used by vendor login
+- commission config used in earning calculations
+- offers list used for vendor dropdowns
+- booking changes reflect in vendor app
+- payouts reflect vendor balances
+
+========================================
+VALIDATIONS & ERROR HANDLING
+========================================
+Consistent error UX:
+- inline field errors for forms
+- toast/snackbar error messages for API failures
+- disabled buttons while submitting
+- confirmation dialogs for destructive actions
+
+========================================
+PERFORMANCE & COST
+========================================
+Use:
+- pagination for large lists
+- simple chart library (no huge dependencies)
+- memoization and lazy loading where useful
+- avoid heavy animation frameworks
+
+========================================
+OUTPUT REQUIRED
+========================================
+Generate:
+- Django models, serializers, viewsets, urls for all above modules
+- DRF permissions for Admin role
+- React app with:
+  - routing (/admin/…)
+  - protected routes
+  - layout (AppBar + Drawer)
+  - MD3 theming (light/dark)
+  - pages for each module
+  - forms with validation
+  - tables/lists with pagination
+  - dialogs, toasts, loaders
+  - charts for analytics
+  - global search
+  - customizable dashboard widgets
+Ensure navigation flow and validations are implemented end-to-end across all described features.

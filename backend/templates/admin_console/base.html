@@ -1,0 +1,102 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Console{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/output.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-background min-h-screen">
+    <div class="flex">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-primary min-h-screen fixed left-0 top-0 z-10">
+            <div class="p-6">
+                <h1 class="text-white text-xl font-bold flex items-center gap-2">
+                    <span class="text-2xl">🏟️</span>
+                    Sports Platform
+                </h1>
+                <p class="text-gray-400 text-sm mt-1">{{ user_role|default:"Admin" }} Console</p>
+            </div>
+            
+            <nav class="mt-6">
+                {% if user_role == 'SUPER_ADMIN' %}
+                <!-- Super Admin Menu -->
+                <a href="{% url 'console-dashboard' %}" class="sidebar-link flex items-center gap-3 px-6 py-3 text-gray-300 {% if active_page == 'dashboard' %}active{% endif %}">
+                    <span>📊</span> Dashboard
+                </a>
+                <a href="{% url 'console-global-config' %}" class="sidebar-link flex items-center gap-3 px-6 py-3 text-gray-300 {% if active_page == 'global-config' %}active{% endif %}">
+                    <span>⚙️</span> Global Config
+                </a>
+                <a href="{% url 'console-offers' %}" class="sidebar-link flex items-center gap-3 px-6 py-3 text-gray-300 {% if active_page == 'offers' %}active{% endif %}">
+                    <span>🎁</span> Offers
+                </a>
+                <a href="{% url 'console-audit-logs' %}" class="sidebar-link flex items-center gap-3 px-6 py-3 text-gray-300 {% if active_page == 'audit-logs' %}active{% endif %}">
+                    <span>📋</span> Audit Logs
+                </a>
+                <a href="{% url 'console-admin-users' %}" class="sidebar-link flex items-center gap-3 px-6 py-3 text-gray-300 {% if active_page == 'admin-users' %}active{% endif %}">
+                    <span>👥</span> Admin Users
+                </a>
+                {% else %}
+                <!-- Admin Menu -->
+                <a href="{% url 'console-dashboard' %}" class="sidebar-link flex items-center gap-3 px-6 py-3 text-gray-300 {% if active_page == 'dashboard' %}active{% endif %}">
+                    <span>📊</span> Dashboard
+                </a>
+                <a href="{% url 'console-vendors' %}" class="sidebar-link flex items-center gap-3 px-6 py-3 text-gray-300 {% if active_page == 'vendors' %}active{% endif %}">
+                    <span>🏪</span> Vendors
+                </a>
+                <a href="{% url 'console-kyc' %}" class="sidebar-link flex items-center gap-3 px-6 py-3 text-gray-300 {% if active_page == 'kyc' %}active{% endif %}">
+                    <span>📄</span> KYC Verification
+                </a>
+                <a href="{% url 'console-bookings' %}" class="sidebar-link flex items-center gap-3 px-6 py-3 text-gray-300 {% if active_page == 'bookings' %}active{% endif %}">
+                    <span>📅</span> Bookings
+                </a>
+                <a href="{% url 'console-customers' %}" class="sidebar-link flex items-center gap-3 px-6 py-3 text-gray-300 {% if active_page == 'customers' %}active{% endif %}">
+                    <span>👤</span> Customers
+                </a>
+                <a href="{% url 'console-tickets' %}" class="sidebar-link flex items-center gap-3 px-6 py-3 text-gray-300 {% if active_page == 'tickets' %}active{% endif %}">
+                    <span>🎫</span> Support Tickets
+                </a>
+                {% endif %}
+            </nav>
+            
+            <div class="absolute bottom-0 left-0 right-0 p-6">
+                <a href="{% url 'console-logout' %}" class="flex items-center gap-3 text-gray-400 hover:text-white transition">
+                    <span>🚪</span> Logout
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 ml-64">
+            <!-- Top Bar -->
+            <header class="bg-surface shadow-sm px-8 py-4 flex items-center justify-between sticky top-0 z-5">
+                <h2 class="text-xl font-semibold text-primary">{% block page_title %}Dashboard{% endblock %}</h2>
+                <div class="flex items-center gap-4">
+                    <span class="text-sm text-gray-600">{{ user.email }}</span>
+                    <div class="w-10 h-10 bg-secondary rounded-full flex items-center justify-center text-white font-medium">
+                        {{ user.email|slice:":1"|upper }}
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <div class="p-8">
+                {% if messages %}
+                {% for message in messages %}
+                <div class="mb-4 p-4 rounded-xl {% if message.tags == 'success' %}bg-green-100 text-green-800{% elif message.tags == 'error' %}bg-red-100 text-red-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+                {% endif %}
+                
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,209 @@
+Build a full Vendor App using Expo (React Native + Web) and Django REST API backend.
+
+GOALS:
+Vendor application with 3 types of vendor users:
+1) Venue owner / Court owner
+2) Coach / Trainer
+3) Sports E-commerce Vendor
+
+These 3 types can register and login inside the Vendor app. When a vendor is a venue owner:
+- They can manage all their venues, courts, coaches, products.
+- They can also personally book courts for walk-in customers and collect cash or online later (placeholder).
+Coaches only see coaching screens.
+Ecommerce vendors only see product screens.
+
+REGISTRATION & LOGIN
+Vendor registration MUST be available on the app:
+- minimal data:
+  owner name
+  business/entity name
+  phone
+  email
+  PAN / Aadhaar (min any 2 ID proofs upload)
+  business type (VENUE, COACH, ECOM or combination)
+  license/registration proof upload
+Validation is required: phone, email, 2 IDs mandatory.
+After registration, vendor enters the app with “pending” status until approved by admin/super-admin (future integration; just status field for now).
+Login continues same email+password logic.
+
+GLOBAL UI/UX (MD3)
+- Use Material Design 3 system from React-Native-Paper with Expo MD3 theme.
+- primary #061A2C, secondary #D96A23, background #F5F6F7, surface #ffffff.
+- minimal animation: tabs slide, bottom sheet slide, button press ripple, FAB spring.
+- responsive layout for Android, iOS and Web (single column for mobile).
+- surfaces elevation based on MD3 (cards elevation-1, dialogs elevation-4).
+- filled text fields, segmented buttons, assist chips, MD3 bottom sheet.
+- corner radius 12dp, elevation scale 1–5.
+
+DASHBOARD
+After vendor logs in, show a branding-based colorful MD3 dashboard.
+Use attached logo color directions (deep navy + orange).
+Dashboard sections depend on vendor type:
+- if venue owner: show KPI tiles (Bookings today, Courts active, Earnings, Pending payouts)
+- if coach only: show coaching sessions and earnings of coaching only
+- if ecommerce only: show products sold, inventory, earnings
+- if mixed: show a unified dashboard with segmented tabs per vertical (Court / Coach / Ecommerce)
+Use animated cards (MD3 ripple, minimal slide).
+Show today’s bookings list for courts.
+Also show 3 day upcoming bookings list, products sold, and sessions list.
+Show small graphs:
+- daily bookings of last 7 days
+- earnings of last weeks
+- MD3 cards with chart placeholders (lightweight SVG).
+
+VENUE MANAGEMENT
+Vendor (only if type includes VENUE):
+Add/edit/delete Venue:
+Fields:
+venue name
+description
+address
+city
+pincode
+location (optional lat/long)
+5 images max upload (min 1 required)
+Upload photo using expo-image-picker (store URL).
+status ACTIVE/INACTIVE
+Save goes to success page with “View Venue” CTA.
+Show Venue cards in list, elevated, image + info.
+After saving, redirect/update state and show success screen.
+
+COURT MANAGEMENT
+Inside a venue, vendor can add courts:
+Fields:
+court name
+sport type (badminton, cricket, tennis, football, etc.)
+price per hour
+capacity
+lighting availability
+surface type
+timings
+photos (min 2, max 5)
+Validation required for all fields.
+Edit and delete available.
+Booking rules:
+Vendor can also book a court inside vendor panel for a customer manually and collect cash (future integration but add “cash payment recorded” placeholder).
+After successful creation, show success message and redirect.
+
+COACH MANAGEMENT
+For vendors with coaching capability and standalone coaches:
+Add coach:
+name
+experience
+certifications (pdf unlimited upload)
+5 training showcase videos (upload urls)
+profile photo upload
+sport specialization
+description
+status
+Coaches can view sessions, upcoming sessions, and earnings.
+Coaches should see only coaching module if not a venue owner.
+Customers who directly bought subscriptions from Admin (future integration) will be able to chat/video call with coach (placeholder: add chat/video call buttons, no functional backend right now).
+
+SPORTS E-COMMERCE VENDOR (Products)
+Product Management
+Fields:
+product name
+MRP
+Selling price
+Description
+Stock qty
+Category
+Images (min 2, max 5)
+Edit/delete enabled
+List of orders for ecommerce vendor (future integration)
+Small cards show basic stats in dashboard.
+
+PHOTO UPLOAD REQUIREMENTS
+Venue: 1 to 5
+Court: 2 to 5
+Products: 2 to 5
+Coach: profile + videos + unlimited certificates
+Use expo-image-picker, upload to API (store to local folder for now or return fake URL).
+Validation on image count.
+
+MEMBERSHIPS MANAGEMENT
+Court Membership options:
+Monthly, 3 months, 6 months, 8 months.
+Commission logic applies on membership sale. Commission percentage comes from Admin configured settings.
+Vendor must see membership purchase history (future integration). Placeholder list with dummy empty state.
+
+COMMISSION LOGIC (IMPORTANT)
+Commission rates for:
+courts
+coaches
+ecommerce
+memberships
+are configurable in Admin.
+Vendor should see commission % applied (read-only dropdown showing value configured by admin).
+Do not allow vendor to change commission value, only show the applied value.
+
+OFFERS SELECTION
+Vendor can select offers (only from list fetched from admin).
+Dropdown list of available offers (percentage already calculated).
+Vendor can attach offer to court, coach, venue, or ecommerce product.
+Offer values are NOT editable by vendor.
+
+BOOKINGS DASHBOARD
+Daily booking list:
+venue name,
+court,
+timing,
+customer name,
+status,
+payment type (cash/online placeholder)
+Ability to mark cash collected or pending (placeholder field).
+Graph view of last 7 days bookings/trend.
+
+PAYOUT DASHBOARD
+Show total earning, pending payout, upcoming payout
+Commissions applied
+Payout history list
+(Implement minimal dummy APIs now)
+Vendor earnings = gross - commission
+
+PROFILE SYSTEM (Vendor/Coach/Ecommerce)
+Common profile screen:
+photo,
+name,
+business type,
+email,
+phone,
+address,
+KYC documents (upload up to 2)
+ID proof validation mandatory for registration
+Profile editable, image upload.
+
+RESPONSIVE + DESIGN
+Global theme MD3
+Primary navy, secondary orange
+White surfaces
+MD3 App bar
+Bottom Tab Navigation for mobile
+Drawer for web
+Animated FAB for “Add”
+MD3 Bottom Sheets for forms
+Subtle loaders (circular + skeleton lists)
+Minimal animations only
+
+SUCCESS SCREENS
+Every creation/edit ends with success animation:
+- card with check icon
+- “Return to list”
+- “Continue adding”
+Include minimal confetti/scale animation (lightweight).
+
+TESTING & REMOVALS
+Remove all dummy placeholders except where noted
+ NO dummy sample data—only real fields
+Check active/inactive status logic
+Add detail views for admin and vendor in the future (placeholder nav links)
+Automatically test minimal validation on fields
+
+LAST STEP
+After Vendor app setup, append function hooks to Admin and Super Admin (future integration points) where:
+- Admin approves vendors, KYC docs, membership logic
+- Super Admin can manage admin and vendor creation and commissions master.
+
+REFERENCE
+Use attached images and logo styling inspiration for color and vibe. Minimal, clean, animated dashboard, MD3 surfaces, responsive, expo safe area, ripple interactions. End-to-end MD3 design only (functionality has already been defined above).

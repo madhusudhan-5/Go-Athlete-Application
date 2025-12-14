@@ -1,0 +1,18 @@
+[project]
+name = "repl-nix-workspace"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.11"
+dependencies = [
+    "channels>=4.3.2",
+    "channels-redis>=4.3.0",
+    "django>=5.2.9",
+    "django-cors-headers>=4.9.0",
+    "djangorestframework>=3.16.1",
+    "djangorestframework-simplejwt>=5.5.1",
+    "drf-spectacular>=0.29.0",
+    "gunicorn>=23.0.0",
+    "pytest-django>=4.11.1",
+    "resend>=2.19.0",
+    "twilio>=9.8.8",
+]

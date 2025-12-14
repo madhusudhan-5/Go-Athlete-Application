@@ -1,0 +1,301 @@
+You are building a VENDOR app with:
+
+- Backend: Django + Django REST Framework (can share same backend as above).
+- Frontend:
+  - Web: React (optional)
+  - Mobile: Expo React Native (Android + iOS)
+- Purpose: Allow vendors to manage venues, courts, slots, bookings, offers, payouts and basic settings.
+- Focus: End-to-end functionality (screens, forms, validation, navigation, API integration). NO visual design yet; no MD3 styling for now.
+
+ARCHITECTURE
+- Backend app "vendorapp".
+- All vendor APIs are prefixed /api/vendor/.
+- Authentication: vendor logs in with email + password (role vendor).
+- Vendor is linked to one or more Venues.
+
+MOBILE NAVIGATION (Expo)
+- Root: AuthStack + AppTabs
+- AuthStack:
+  - LoginScreen
+  - RegisterVendorScreen (optional)
+- AppTabs:
+  - DashboardTab
+  - CalendarTab
+  - BookingsTab
+  - VenueTab
+  - SettingsTab
+
+WEB NAVIGATION (if web UI added)
+- /vendor/login
+- /vendor/dashboard
+- /vendor/calendar
+- /vendor/venues
+- /vendor/venues/:id
+- /vendor/courts/:id
+- /vendor/bookings
+- /vendor/settings
+
+MODULES & SCREENS
+
+1) LOGIN (Vendor)
+- Fields:
+  - email (required, valid format)
+  - password (required, min length 8)
+- Endpoint: POST /api/vendor/auth/login/
+- On success:
+  - store token (SecureStorage/AsyncStorage on mobile, localStorage on web).
+  - navigate to DashboardTab.
+
+2) DASHBOARD
+- Endpoint: GET /api/vendor/summary/
+  - bookings_today
+  - upcoming_bookings_count
+  - active_courts
+  - pending_payout_amount
+- UI elements:
+  - KPI cards
+  - Quick actions:
+    - "Add Venue" (if none)
+    - "Add Court"
+    - "Go to Calendar"
+- Navigation:
+  - Tap quick action → relevant screen.
+
+3) VENUE MANAGEMENT
+
+MODEL: Venue
+- fields:
+  - vendor (FK to User)
+  - name (required)
+  - description (optional, max 500)
+  - address_line1 (required)
+  - address_line2 (optional)
+  - city (required)
+  - state (required)
+  - postal_code (required)
+  - latitude, longitude (optional, float)
+  - phone (required)
+  - email (optional)
+  - status (ACTIVE, INACTIVE, PENDING_VERIFICATION)
+  - created_at, updated_at
+
+APIs:
+- GET /api/vendor/venues/
+- POST /api/vendor/venues/
+- GET /api/vendor/venues/:id/
+- PATCH /api/vendor/venues/:id/
+- POST /api/vendor/venues/:id/deactivate/
+- POST /api/vendor/venues/:id/activate/
+
+Validation:
+- name, address_line1, city, state, postal_code, phone required.
+- email, if provided, must be valid.
+
+SCREENS:
+- VenueListScreen:
+  - lists venues.
+  - "Add Venue" button.
+- VenueFormScreen (Create/Edit):
+  - multi-step or single screen with all fields.
+  - shows validation errors.
+
+4) COURT MANAGEMENT
+
+MODEL: Court
+- fields:
+  - venue (FK)
+  - name (required)
+  - sport (enum: CRICKET, FOOTBALL, BADMINTON, TENNIS, OTHER)
+  - base_price_per_hour (int, >0)
+  - capacity (int, >=1)
+  - has_lights (boolean)
+  - surface_type (optional text)
+  - status (ACTIVE, INACTIVE)
+- APIs:
+  - GET /api/vendor/courts/?venue_id=
+  - POST /api/vendor/courts/
+  - GET /api/vendor/courts/:id/
+  - PATCH /api/vendor/courts/:id/
+  - POST /api/vendor/courts/:id/deactivate/
+- Validation:
+  - name, sport, base_price_per_hour, capacity required.
+  - base_price_per_hour > 0.
+
+SCREENS:
+- CourtListScreen (for a given Venue)
+- CourtFormScreen (Create/Edit)
+
+Navigation:
+- From VenueDetail → “Manage Courts” → CourtList.
+- From CourtList → Add Court button → CourtForm.
+
+5) SLOT & AVAILABILITY MANAGEMENT
+
+MODEL: CourtAvailability or Slot template
+- For simplicity:
+  - start_time (datetime)
+  - end_time (datetime)
+  - is_blocked (bool; for maintenance).
+  
+OR use templates:
+- day_of_week
+- start_time, end_time
+- slot_duration_minutes
+
+API for generating slots preview:
+- POST /api/vendor/courts/:id/generate-slots-preview/
+  - payload:
+    - from_date
+    - to_date
+    - start_time
+    - end_time
+    - slot_duration_minutes
+- Response: list of time ranges.
+
+API to persist:
+- POST /api/vendor/courts/:id/save-slots/
+
+SCREENS:
+- SlotGeneratorScreen:
+  - fields: from_date, to_date, start_time, end_time, slot_duration.
+  - preview list of slots.
+  - “Save Slots” button.
+
+Validation:
+- to_date >= from_date.
+- end_time > start_time.
+- slot_duration_minutes > 0.
+
+6) CALENDAR VIEW
+
+Endpoint:
+- GET /api/vendor/calendar/?date=&court_id=
+  - returns slots (status FREE/BOOKED/BLOCKED) with start_time/end_time.
+
+Screen: CalendarTab
+- horizontal date selector at top.
+- vertical list of time slots.
+- tapping FREE slot → open BookingCreate modal.
+- tapping BOOKED slot → open BookingDetail screen.
+
+7) BOOKING MANAGEMENT (Vendor Perspective)
+
+MODEL: Booking
+- fields:
+  - court (FK)
+  - customer_name (string)
+  - customer_phone (string)
+  - start_time, end_time
+  - price_amount (int)
+  - status (CONFIRMED, CANCELLED, COMPLETED, NO_SHOW)
+  - payment_status (PENDING, PAID, FAILED)
+  - created_at
+
+APIs:
+- GET /api/vendor/bookings/?date=&status=
+- GET /api/vendor/bookings/:id/
+- POST /api/vendor/bookings/ (Vendor created booking)
+- PATCH /api/vendor/bookings/:id/ (status updates)
+- POST /api/vendor/bookings/:id/cancel/
+- POST /api/vendor/bookings/:id/complete/
+
+Validation:
+- start_time < end_time.
+- price_amount >= 0.
+- Cannot cancel after end_time unless admin-override (not in vendor app).
+
+SCREENS:
+- BookingsListScreen:
+  - filter by date, status.
+  - show list with customer, time, court.
+- BookingDetailScreen:
+  - show all details.
+  - actions: Cancel, Mark Completed.
+  - Optionally call /api/vendor/send-sms/ to notify customer.
+
+8) SIMPLE OFFERS (Vendor-Level)
+
+MODEL: VendorOffer
+- vendor (FK)
+- title
+- description
+- discount_type (PERCENT, FLAT)
+- discount_value
+- valid_from, valid_to
+- active (bool)
+
+APIs:
+- GET /api/vendor/offers/
+- POST /api/vendor/offers/
+- PATCH /api/vendor/offers/:id/
+- POST /api/vendor/offers/:id/activate/
+- POST /api/vendor/offers/:id/deactivate/
+
+SCREENS:
+- OfferListScreen
+- OfferFormScreen
+
+9) PAYOUTS
+
+MODEL: Payout
+- vendor (FK)
+- amount
+- status (PENDING, PROCESSING, PAID, FAILED)
+- requested_at
+- processed_at
+
+Endpoints:
+- GET /api/vendor/payouts/summary/
+  - pending_amount
+  - last_payout_date
+- POST /api/vendor/payouts/request/
+  - creates payout if pending_amount >= global_config.min_payout_amount.
+
+Screen: PayoutScreen
+- show pending amount, next possible payout date, last payouts.
+- “Request Payout” button with validation and error if not enough amount.
+
+10) SETTINGS & KYC (Vendor)
+
+- Basic profile settings: update venue info (mapped to Venue).
+- Bank details and KYC uploads – can be MVP:
+  - account_number
+  - ifsc
+  - upi_id
+  - status (PENDING_VERIFICATION, VERIFIED, REJECTED)
+- API:
+  - GET /api/vendor/settings/
+  - PATCH /api/vendor/settings/
+  - KYC uploads endpoints (file fields) if needed, but can be stubbed for now.
+
+NAVIGATION RULES (Vendor)
+
+- If not authenticated → always show Login.
+- After login:
+  - If no venues → redirect to Add Venue flow.
+  - If at least one venue but no courts → highlight “Add Court” action.
+- Tab navigation:
+  - Dashboard → quick overview + actions.
+  - Calendar → day-based bookings & slots.
+  - Bookings → lists for a date range.
+  - Venue → list + manage.
+  - Settings → profile, bank, KYC.
+
+TEXTING / SMS INTEGRATION (Vendor)
+
+- Reuse /api/send-sms/ (or /api/vendor/send-sms/ wrapper):
+  - from BookingDetailScreen, optional "Send SMS reminder to customer" button.
+- In development:
+  - Use environment variable SMS_MODE=LOG so messages are only printed to console.
+
+NO DESIGN NOW
+
+- Use basic layouts and controls only.
+- DO NOT add animations, colors, MD3 theming yet.
+- This phase is only for implementing:
+  - routes
+  - forms
+  - validation
+  - backend endpoints
+  - auth flows
+  - navigation.

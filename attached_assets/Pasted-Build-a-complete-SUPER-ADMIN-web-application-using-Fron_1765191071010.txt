@@ -1,0 +1,325 @@
+Build a complete SUPER ADMIN web application using:
+
+Frontend: React (web, responsive)
+Backend: Django REST Framework
+Design System: Material Design 3 (MD3)
+Color palette:
+  primary: #0A1F35
+  secondary: #DA6F2B
+  darkPrimary: #030929
+Light + Dark mode toggle, persist preference
+Responsive for desktop/tablet/mobile
+
+The SUPER ADMIN is the TOP MOST ROLE:
+- SUPER ADMIN manages platform level controls
+- SUPER ADMIN creates and manages Admins
+- SUPER ADMIN configures global settings
+- SUPER ADMIN has visibility to all vendors, bookings, payouts, commissions, offers, products
+- SUPER ADMIN overrides ADMIN permissions
+- SUPER ADMIN manages entire system security and operations
+
+=================================================================
+AUTH & ROLE MODEL (SUPER ADMIN)
+=================================================================
+Separate login endpoint:
+POST /api/super/auth/login/
+
+SUPERAUTH model:
+SuperAdmin:
+  id
+  email (unique)
+  password
+  full_name
+  phone
+  is_active
+  created_at
+
+SUPERADMIN actions include:
+- Add Admin
+- Edit Admin permissions
+- Enable/Disable Admin accounts
+Root role above everything else
+
+Frontend:
+- secure /super/* routes
+- login at /super/login
+- redirect unauthorized to login
+- store JWT token
+- MD3 protected layout
+
+=================================================================
+ADMIN MANAGEMENT (BY SUPER ADMIN)
+=================================================================
+SUPER ADMIN can create and modify Admin accounts and permissions:
+
+Model:
+AdminUser:
+  id
+  email
+  password (hashed)
+  full_name
+  phone
+  is_active
+  permissions:
+    can_manage_vendors
+    can_manage_commissions
+    can_manage_offers
+    can_manage_bookings
+    can_manage_tickets
+    can_manage_reports
+    can_manage_memberships
+    can_manage_payouts
+
+Endpoints:
+- GET /api/super/admins/
+- POST /api/super/admins/
+- GET /api/super/admins/:id/
+- PATCH /api/super/admins/:id/
+- POST /api/super/admins/:id/enable/
+- POST /api/super/admins/:id/disable/
+
+UI:
+Route: /super/admins
+List admins with status badges
+Actions:
+  Add New Admin → MD3 dialog with fields + permissions toggles
+  Edit Admin → modify permissions
+  Enable/Disable account
+Validation:
+Email unique
+Password strong policy optional
+
+=================================================================
+GLOBAL CONFIGURATION
+=================================================================
+Super Admin controls platform-wide config not exposed to Admin OR partly exposed:
+
+Model:
+SystemConfig:
+  platform_name
+  support_email
+  support_phone
+  maintenance_mode (bool)
+  login_banner_message
+  global_terms_url
+  privacy_policy_url
+  default_commission_min
+  max_upload_size
+
+Endpoints:
+- GET /api/super/config/
+- PATCH /api/super/config/
+
+UI:
+Route: /super/settings/config
+MD3 form:
+- Platform branding (name, logo)
+- Support contact details
+- Maintenance mode switch
+- Terms/Privacy links
+- Save → success toast
+
+=================================================================
+COMMISSION OVERRIDE & HISTORY
+=================================================================
+Super Admin can override commissions globally and view history:
+
+Model:
+CommissionHistory:
+  id
+  changed_by (SuperAdmin)
+  court_pct
+  coach_pct
+  ecommerce_pct
+  membership_pct
+  changed_at
+
+Endpoint:
+- GET /api/super/commissions/history
+- POST /api/super/commissions/override (new global values)
+
+UI:
+Route: /super/settings/commissions
+- Current commission config read-only
+- Override (if required)
+- Show log/history table sorted by changed_at desc
+Validation:
+0–100 range
+Show warning dialog “This affects entire platform”
+
+=================================================================
+OFFERS/ PROMOTIONS OVERRIDE
+=================================================================
+Super Admin can override, deactivate or delete admin-defined offers:
+
+Endpoints:
+- POST /api/super/offers/:id/override/
+- POST /api/super/offers/:id/deactivate/
+- DELETE /api/super/offers/:id/
+
+UI:
+- Offer details → override actions
+- Deactivate global offers
+- Completely remove if required
+- Confirm dialogs for destructive actions
+
+=================================================================
+PLATFORM ANALYTICS (SUPER ADMIN LEVEL)
+=================================================================
+Route: /super/analytics
+
+Endpoints:
+- GET /api/super/analytics/summary?from=&to=
+  total_vendors
+  total_admins
+  active_vendors
+  daily_revenue
+  platform_commission_collected
+  payouts_paid
+  payouts_pending
+  top_vendors
+  top_admins
+  top_regions
+
+Charts (MD3):
+- revenue trend
+- commission trend
+- vendor growth trend
+- region heatmap optional
+- booking volume
+
+Filters:
+- time range (7d, 30d, 90d, custom)
+- vendor types
+- regions
+
+=================================================================
+VENDOR OVERSIGHT (VIEW + ACTIONS)
+=================================================================
+Super Admin has full visibility:
+- all vendors
+- all bookings
+- all payouts
+- all tickets
+- all KYC
+- all products
+- all courts
+- all venues
+- all coaches
+
+Endpoints (read only for super):
+- GET /api/super/vendors/...
+- GET /api/super/bookings/...
+…etc
+
+Actions:
+- View vendor details
+- Force deactivate vendor
+- Force reset vendor
+- Hard delete vendor if needed
+Warnings + Confirmations required
+
+=================================================================
+SECURITY & PERMISSIONS
+=================================================================
+All /super endpoints require SUPERADMIN auth
+JWT tokens separated from Admin tokens
+Granular permission checks:
+- force_disable_vendor allowed only for Super Admin
+- commission_overrides only for Super Admin
+- admin creation only for Super Admin
+
+=================================================================
+AUDIT LOGS (REQUIRED)
+=================================================================
+Model:
+AuditLog:
+  id
+  actor_type (SUPERADMIN, ADMIN, VENDOR, SYSTEM)
+  actor_id
+  action
+  entity_type
+  entity_id
+  old_value
+  new_value
+  timestamp
+
+Endpoints:
+- GET /api/super/audit-logs/?actor_type=&entity_type=&date=
+- GET /api/super/audit-logs/:id/
+
+UI:
+- Table view with filters
+- Details panel for JSON before/after
+- MD3 chips for actor type and entity type
+
+=================================================================
+NOTIFICATIONS & BROADCAST
+=================================================================
+Super Admin can broadcast platform-wide notices:
+
+Model:
+BroadcastMessage:
+  id
+  title
+  body
+  target (ALL_VENDORS, ALL_ADMINS, ALL)
+  created_by (SuperAdmin)
+  created_at
+
+Endpoints:
+- POST /api/super/broadcast/
+- GET /api/super/broadcast/?target=
+
+UI:
+- /super/broadcast
+- Form to create broadcast
+- Send notification banner/alert
+
+=================================================================
+LIGHT & DARK MODE
+=================================================================
+Global MD3 theme with:
+- palette switching
+- surfaces and elevations adapting
+- saved preference per SuperAdmin or localStorage
+
+=================================================================
+PERFORMANCE & COST
+=================================================================
+Use:
+- server-side pagination
+- minimal chart dependency
+- lazy loading
+- avoid heavy animation libs
+- caching for analytics endpoints
+
+=================================================================
+ERROR HANDLING & VALIDATIONS
+=================================================================
+- inline field errors
+- toast/snackbar errors
+- confirmation dialogs for destructive actions
+- loading and disabled states on forms
+
+=================================================================
+OUTPUT REQUIRED
+=================================================================
+Generate:
+- Django models, serializers, permissions, viewsets, urls
+- React layout with MD3 components (light/dark)
+- /super routes:
+  Login
+  Dashboard
+  Admin Management
+  System Config
+  Commission Override
+  Offers Override
+  Analytics
+  Vendor Oversight (read)
+  Audit Logs
+  Broadcast Messenger
+  Profile/Settings
+- Full navigation, validations, dialogs, permission checks
+- Everything described end-to-end
+

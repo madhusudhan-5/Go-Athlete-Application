@@ -1,0 +1,152 @@
+You are building a FULL admin web application with:
+
+- Backend: Django + Django REST Framework
+- Frontend: React (web)
+- Purpose: Ops/Admin team managing vendor onboarding, KYC approval, bookings oversight, tickets, and reports.
+- Focus: End-to-end functionality (models, APIs, validation, navigation). NO visual design yet.
+
+ARCHITECTURE
+- This can share the same Django project as SuperAdmin or be separate; assume same project with separate "adminapp" app.
+- Use role-based access: ADMIN vs SUPER_ADMIN.
+- All endpoints here are /api/admin/... and secured (IsAdminUser or custom permission).
+
+FRONTEND ROUTING (Admin)
+- /admin/login
+- /admin/dashboard
+- /admin/vendors
+- /admin/vendors/:id
+- /admin/kyc
+- /admin/bookings
+- /admin/bookings/:id
+- /admin/tickets
+- /admin/tickets/:id
+- /admin/reports
+
+ADMIN MODULES
+
+1) ADMIN LOGIN
+- Endpoint: POST /api/admin/auth/login/
+  - email, password
+- Response: token + role=ADMIN.
+- After login redirect to /admin/dashboard.
+
+2) ADMIN DASHBOARD
+- Endpoint: GET /api/admin/summary/
+  - pending_vendors
+  - pending_kyc
+  - open_tickets
+  - today_bookings
+- Page /admin/dashboard:
+  - Cards for each KPI.
+  - Navigation:
+    - Pending vendors → /admin/vendors?filter=pending
+    - Pending KYC → /admin/kyc
+    - Open tickets → /admin/tickets?filter=open
+
+3) VENDOR ONBOARDING (Admin side)
+- Admin sees vendors in PENDING status and can approve or reject.
+- Endpoint:
+  - GET /api/admin/vendors/?status=pending
+  - GET /api/admin/vendors/:id/
+  - POST /api/admin/vendors/:id/approve/ (may be same as super approve but limited)
+  - POST /api/admin/vendors/:id/reject/ (reason required)
+- Vendor detail fields:
+  - Basic vendor info (read-only)
+  - KYC summary (read-only, link to doc viewer)
+- Validation:
+  - Reject requires reason length >= 10.
+- Navigation:
+  - /admin/vendors: list page with filters [Pending, Approved, Rejected].
+  - /admin/vendors/:id: detail page with Approve/Reject actions.
+
+4) KYC APPROVAL
+- For each vendor, KYC docs must be verified:
+  - PAN
+  - GST
+  - Bank account proof
+- Model: VendorKYC
+  - vendor (FK)
+  - pan_number, pan_doc_url
+  - gst_number, gst_doc_url
+  - bank_doc_url
+  - status (PENDING, VERIFIED, REJECTED)
+  - rejection_reason
+- Endpoints:
+  - GET /api/admin/kyc/?status=pending
+  - GET /api/admin/kyc/:id/
+  - POST /api/admin/kyc/:id/verify/
+  - POST /api/admin/kyc/:id/reject/ (reason required)
+- Validation:
+  - PAN format regex.
+  - GST format regex.
+- Frontend:
+  - /admin/kyc: table of pending KYCs.
+  - /admin/kyc/:id: view docs + buttons Verify / Reject (with reason).
+
+5) BOOKING OVERSIGHT
+- Admin oversees all bookings across vendors.
+- Endpoint:
+  - GET /api/admin/bookings/?date=&vendor_id=&status=
+  - GET /api/admin/bookings/:id/
+  - PATCH /api/admin/bookings/:id/ (change status: CONFIRMED/CANCELLED/COMPLETED)
+  - POST /api/admin/bookings/:id/refund/ (amount, reason)
+- Validation:
+  - Completed bookings cannot be cancelled.
+  - Refund cannot exceed total booking amount.
+- Frontend:
+  - /admin/bookings: table with filters (date range, vendor, status).
+  - /admin/bookings/:id: detail view with:
+    - customer, court, times, price, payment status
+    - actions: Change status, Trigger refund
+    - optional: “Send SMS” using /api/super/send-sms/ or /api/admin/send-sms/.
+
+6) CUSTOMER MANAGEMENT (LIGHTWEIGHT)
+- Admin can look up customers to see behaviour.
+- Endpoints:
+  - GET /api/admin/customers/?search=
+  - GET /api/admin/customers/:id/
+- Fields (read-only for now):
+  - name, phone, email, bookings_count, last_booking_date.
+
+7) SUPPORT TICKETS
+- Model: Ticket
+  - created_by (Customer or Vendor or Admin)
+  - subject
+  - description
+  - category (PAYMENT, BOOKING, APP_ISSUE, OTHER)
+  - severity (LOW, MEDIUM, HIGH, CRITICAL)
+  - status (OPEN, IN_PROGRESS, RESOLVED, ESCALATED)
+  - assigned_to (AdminUser)
+  - created_at, updated_at
+- Endpoints:
+  - GET /api/admin/tickets/?status=&severity=
+  - GET /api/admin/tickets/:id/
+  - POST /api/admin/tickets/:id/assign/ (assign to admin)
+  - POST /api/admin/tickets/:id/update-status/ (status change)
+  - POST /api/admin/tickets/:id/add-note/ (text note)
+- Validation:
+  - Escalate only allowed from OPEN or IN_PROGRESS.
+- Frontend:
+  - /admin/tickets: list with filters.
+  - /admin/tickets/:id: detail page with notes list, change status, assign.
+
+8) REPORTS (ADMIN VIEW)
+- Endpoint:
+  - GET /api/admin/reports/summary?from=&to=
+    - bookings_count
+    - cancellations_count
+    - total_revenue
+- Frontend:
+  - /admin/reports: a simple page with summary numbers and CSV download link.
+- For now, simple text summary; charts can be added later.
+
+NAVIGATION RULES (Admin)
+- If not authenticated as ADMIN, any /admin/* route → /admin/login.
+- On successful login → /admin/dashboard.
+- From dashboard, KPIs link to relevant modules.
+- Use breadcrumb-like links (e.g. Vendors > Vendor Detail).
+
+NO DESIGN NOW
+- Only basic layout and forms.
+- No MD3 styling or colors yet.
+- Focus only on data flow, fields, validation, and routing.

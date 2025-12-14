@@ -1,0 +1,91 @@
+{% extends 'admin_console/base.html' %}
+
+{% block title %}Support Tickets - Admin Console{% endblock %}
+{% block page_title %}Support Tickets{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <div class="flex gap-3">
+        <a href="?status=all" class="px-4 py-2 rounded-xl text-sm font-medium {% if status == 'all' %}bg-secondary text-white{% else %}bg-surface text-gray-600{% endif %}">All</a>
+        <a href="?status=OPEN" class="px-4 py-2 rounded-xl text-sm font-medium {% if status == 'OPEN' %}bg-secondary text-white{% else %}bg-surface text-gray-600{% endif %}">Open</a>
+        <a href="?status=IN_PROGRESS" class="px-4 py-2 rounded-xl text-sm font-medium {% if status == 'IN_PROGRESS' %}bg-secondary text-white{% else %}bg-surface text-gray-600{% endif %}">In Progress</a>
+        <a href="?status=RESOLVED" class="px-4 py-2 rounded-xl text-sm font-medium {% if status == 'RESOLVED' %}bg-secondary text-white{% else %}bg-surface text-gray-600{% endif %}">Resolved</a>
+    </div>
+</div>
+
+<div class="bg-surface rounded-2xl card overflow-hidden">
+    <table class="w-full">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="text-left px-6 py-4 text-sm font-medium text-gray-600">Ticket ID</th>
+                <th class="text-left px-6 py-4 text-sm font-medium text-gray-600">Subject</th>
+                <th class="text-left px-6 py-4 text-sm font-medium text-gray-600">Customer</th>
+                <th class="text-left px-6 py-4 text-sm font-medium text-gray-600">Priority</th>
+                <th class="text-left px-6 py-4 text-sm font-medium text-gray-600">Status</th>
+                <th class="text-left px-6 py-4 text-sm font-medium text-gray-600">Created</th>
+                <th class="text-left px-6 py-4 text-sm font-medium text-gray-600">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+            {% for ticket in tickets %}
+            <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4">
+                    <span class="font-mono text-sm text-primary">#{{ ticket.id }}</span>
+                </td>
+                <td class="px-6 py-4">
+                    <p class="font-medium text-primary max-w-xs truncate">{{ ticket.subject }}</p>
+                </td>
+                <td class="px-6 py-4">
+                    <div>
+                        <p class="text-sm text-primary">{{ ticket.customer_name|default:'Guest' }}</p>
+                        <p class="text-xs text-gray-500">{{ ticket.customer_email|default:'-' }}</p>
+                    </div>
+                </td>
+                <td class="px-6 py-4">
+                    <span class="px-3 py-1 rounded-full text-sm font-medium
+                        {% if ticket.priority == 'HIGH' %}bg-red-100 text-red-800
+                        {% elif ticket.priority == 'MEDIUM' %}bg-yellow-100 text-yellow-800
+                        {% else %}bg-gray-100 text-gray-600{% endif %}">
+                        {{ ticket.priority|default:'NORMAL' }}
+                    </span>
+                </td>
+                <td class="px-6 py-4">
+                    <span class="px-3 py-1 rounded-full text-sm font-medium
+                        {% if ticket.status == 'OPEN' %}bg-blue-100 text-blue-800
+                        {% elif ticket.status == 'IN_PROGRESS' %}bg-yellow-100 text-yellow-800
+                        {% elif ticket.status == 'RESOLVED' %}bg-green-100 text-green-800
+                        {% else %}bg-gray-100 text-gray-600{% endif %}">
+                        {{ ticket.status }}
+                    </span>
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-600">
+                    {{ ticket.created_at|date:"M d, Y" }}
+                </td>
+                <td class="px-6 py-4">
+                    <div class="flex gap-2">
+                        {% if ticket.status == 'OPEN' %}
+                        <form method="POST" action="{% url 'console-ticket-progress' ticket.id %}" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Start</button>
+                        </form>
+                        {% elif ticket.status == 'IN_PROGRESS' %}
+                        <form method="POST" action="{% url 'console-ticket-resolve' ticket.id %}" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="text-green-600 hover:text-green-800 text-sm font-medium">Resolve</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+                    <span class="text-4xl block mb-2">🎫</span>
+                    No support tickets found
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

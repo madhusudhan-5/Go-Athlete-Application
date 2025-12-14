@@ -1,0 +1,193 @@
+You are building a FULL super-admin web application with:
+
+- Backend: Django + Django REST Framework
+- Frontend: React (web)
+- Purpose: Platform-level management of vendors, admins, global configs, offers, and audit logs.
+- Focus: End-to-end functionality (models, APIs, validation, navigation). DO NOT focus on visual design yet.
+
+GENERAL ARCHITECTURE
+- Create a Django project named "platform_core".
+- Create an app "superadmin".
+- Use Django REST Framework for all APIs.
+- Use token-based auth (Simple JWT or DRF TokenAuth).
+- Enable CORS for React frontend.
+- Use SQLite for now.
+- Add basic SuperAdmin user bootstrapping.
+
+AUTH & ROLES
+- Single role here: SUPER_ADMIN (stored as is_super_admin flag on User OR separate Role model).
+- SuperAdmin logs in via /api/auth/login/ (email + password).
+  - Validation:
+    - email: required, valid email.
+    - password: required, min length 8.
+  - Response:
+    - token + basic profile.
+
+FRONTEND ROUTING (React)
+- Public routes:
+  - /login
+- Protected routes (require token):
+  - /dashboard
+  - /vendors
+  - /vendors/:id
+  - /admins
+  - /offers
+  - /offers/new
+  - /offers/:id
+  - /global-config
+  - /audit-logs
+
+MAIN MODULES
+
+1) GLOBAL CONFIG MANAGEMENT
+- Model: GlobalConfig
+  - commission_pct (decimal, 0–100, required)
+  - payout_cycle (enum: DAILY, WEEKLY, MONTHLY, required)
+  - min_payout_amount (integer, >= 0)
+  - booking_cancellation_window_hours (integer, >=0)
+- Endpoints:
+  - GET /api/super/global-config/ → return current config (only one entry).
+  - PATCH /api/super/global-config/ → update fields.
+- Validation rules:
+  - commission_pct between 0 and 100.
+  - min_payout_amount >= 0.
+  - booking_cancellation_window_hours >= 0.
+- Frontend behavior:
+  - Page /global-config:
+    - Show form with these fields.
+    - Only allow save if all validations pass.
+    - On success, show confirmation and keep data in state.
+
+2) SUPER ADMIN DASHBOARD
+- Aggregate KPIs from vendors/bookings:
+  - total_vendors
+  - active_vendors
+  - pending_vendor_approvals
+  - total_revenue (sum of vendor revenues)
+  - total_bookings
+  - today_bookings
+- Endpoint:
+  - GET /api/super/summary/
+- Frontend route /dashboard:
+  - Call summary API on load.
+  - Show KPI numbers, and simple list of “Recently approved vendors / recent platform actions”.
+  - Clicking “Pending vendors” navigates to /vendors?filter=pending.
+
+3) VENDOR MANAGEMENT (OVERVIEW & STATUS CONTROL)
+- Model: Vendor
+  - name (required)
+  - legal_name (optional)
+  - owner_name (required)
+  - email (required, unique)
+  - phone (required)
+  - city, state, country
+  - status (enum: PENDING, APPROVED, REJECTED, SUSPENDED)
+  - rejection_reason (optional)
+  - kyc_status (enum: NOT_SUBMITTED, SUBMITTED, VERIFIED, REJECTED)
+  - created_at, updated_at
+- Endpoints:
+  - GET /api/super/vendors/ → list with filter by status, pagination.
+  - GET /api/super/vendors/:id/ → full vendor detail.
+  - POST /api/super/vendors/:id/approve/ → sets status=APPROVED, logs audit.
+  - POST /api/super/vendors/:id/reject/ → sets status=REJECTED with rejection_reason (required).
+  - POST /api/super/vendors/:id/suspend/ → sets status=SUSPENDED with reason (required).
+  - POST /api/super/vendors/:id/activate/ → sets status=APPROVED again.
+- Validation:
+  - Approve: only PENDING or REJECTED can become APPROVED.
+  - Reject: reason is required, min 10 chars.
+  - Suspend: reason required.
+- Frontend:
+  - /vendors: table list with filters (ALL, PENDING, APPROVED, REJECTED, SUSPENDED).
+  - /vendors/:id: detail page with vendor info, KYC info summary, buttons Approve/Reject/Suspend.
+  - On Reject or Suspend, open dialog asking for reason text.
+
+4) ADMIN USER MANAGEMENT (PLATFORM ADMINS, NOT SUPER ADMIN)
+- Model: AdminUser
+  - linked to Django User (OneToOne)
+  - permissions flags:
+    - can_onboard_vendor
+    - can_manage_bookings
+    - can_view_reports
+- Endpoints:
+  - GET /api/super/admins/
+  - POST /api/super/admins/ (create admin user with permissions)
+  - GET /api/super/admins/:id/
+  - PATCH /api/super/admins/:id/
+  - POST /api/super/admins/:id/suspend/
+- Validation:
+  - email required & unique.
+  - At least one permission flag true.
+- Frontend:
+  - /admins: list of admins + create admin form overlay.
+
+5) GLOBAL OFFERS MANAGEMENT
+- Model: Offer (global-level)
+  - name (required)
+  - description (optional)
+  - discount_type (enum: PERCENT, FLAT)
+  - discount_value (decimal >0)
+  - max_discount_amount (optional, decimal)
+  - applicable_scope (enum: ALL_VENDORS, SELECTED_VENDORS)
+  - status (enum: DRAFT, ACTIVE, EXPIRED)
+  - valid_from (datetime)
+  - valid_to (datetime)
+- Endpoints:
+  - GET /api/super/offers/
+  - POST /api/super/offers/
+  - GET /api/super/offers/:id/
+  - PATCH /api/super/offers/:id/
+  - POST /api/super/offers/:id/activate/
+- Validation:
+  - discount_value > 0.
+  - valid_to > valid_from.
+  - for PERCENT, discount_value <= 100.
+- Frontend:
+  - /offers: list with filter by status.
+  - /offers/new: create form with validation.
+  - /offers/:id: edit form with activate/deactivate.
+
+6) AUDIT LOGS
+- Model: AuditLog
+  - user (string or FK to User)
+  - action (string)
+  - entity_type (string: VENDOR, ADMIN, CONFIG, OFFER, etc.)
+  - entity_id (string/int)
+  - old_value (JSON)
+  - new_value (JSON)
+  - created_at (timestamp)
+- Endpoints:
+  - GET /api/super/audit-logs/?page=&entity_type=&action=
+  - GET /api/super/audit-logs/:id/
+- Frontend:
+  - /audit-logs: table with filters and pagination.
+  - row click → open drawer / modal with full JSON diff.
+
+7) BASIC TEXTING / SMS UTILITY (OPTIONAL BUT SUPPORTED)
+- Endpoint:
+  - POST /api/super/send-sms/
+    - body: { to: "+91...", message: "..." }
+- Behavior:
+  - In development, if env SMS_MODE=LOG, just log and 200 response.
+  - In production, integrate Twilio client.
+- Used from:
+  - Optionally from vendor detail or admin user detail to send manual SMS.
+
+NAVIGATION RULES
+- If not authenticated, redirect any route → /login.
+- After login as SuperAdmin, go to /dashboard.
+- From /dashboard:
+  - "Pending Vendors" card → /vendors?filter=pending
+  - "Global Config" link → /global-config
+  - "Offers" card → /offers
+- All forms must block navigation on unsaved changes (simple browser confirm is enough).
+
+DON’T DO NOW (will be added later):
+- No styling beyond minimal HTML/CSS and basic layout.
+- No animations.
+- No MD3 visual tokens except maybe class names or minimal design hooks.
+
+The focus right now is:
+- Correct models
+- Correct REST endpoints
+- Proper field-level validations
+- Full navigation wiring between pages.

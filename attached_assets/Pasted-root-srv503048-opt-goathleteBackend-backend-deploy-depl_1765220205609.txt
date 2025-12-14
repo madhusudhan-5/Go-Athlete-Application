@@ -1,0 +1,30 @@
+root@srv503048:/opt/goathleteBackend/backend#  ./deploy/deploy.sh
+==========================================
+Sports Platform Backend Deployment Script
+==========================================
+[1/7] Installing system dependencies...
+Ign:1 http://in.archive.ubuntu.com/ubuntu lunar InRelease      
+Ign:2 http://in.archive.ubuntu.com/ubuntu lunar-updates InRelease
+Ign:3 http://in.archive.ubuntu.com/ubuntu lunar-backports InRelease
+Ign:4 http://in.archive.ubuntu.com/ubuntu lunar-security InRelease
+Err:5 http://in.archive.ubuntu.com/ubuntu lunar Release
+  404  Not Found [IP: 91.189.91.81 80]
+Err:6 http://in.archive.ubuntu.com/ubuntu lunar-updates Release
+  404  Not Found [IP: 91.189.91.81 80]
+Err:7 http://in.archive.ubuntu.com/ubuntu lunar-backports Release
+  404  Not Found [IP: 91.189.91.81 80]
+Err:8 http://in.archive.ubuntu.com/ubuntu lunar-security Release
+  404  Not Found [IP: 91.189.91.81 80]
+Reading package lists... Done
+E: The repository 'http://in.archive.ubuntu.com/ubuntu lunar Release' no longer has a Release file.
+N: Updating from such a repository can't be done securely, and is therefore disabled by default.
+N: See apt-secure(8) manpage for repository creation and user configuration details.
+E: The repository 'http://in.archive.ubuntu.com/ubuntu lunar-updates Release' no longer has a Release file.
+N: Updating from such a repository can't be done securely, and is therefore disabled by default.
+N: See apt-secure(8) manpage for repository creation and user configuration details.
+E: The repository 'http://in.archive.ubuntu.com/ubuntu lunar-backports Release' no longer has a Release file.
+N: Updating from such a repository can't be done securely, and is therefore disabled by default.
+N: See apt-secure(8) manpage for repository creation and user configuration details.
+E: The repository 'http://in.archive.ubuntu.com/ubuntu lunar-security Release' no longer has a Release file.
+N: Updating from such a repository can't be done securely, and is therefore disabled by default.
+N: See apt-secure(8) manpage for repository creation and user configuration details.

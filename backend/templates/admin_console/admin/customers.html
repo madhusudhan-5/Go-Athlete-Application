@@ -1,0 +1,70 @@
+{% extends 'admin_console/base.html' %}
+
+{% block title %}Customers - Admin Console{% endblock %}
+{% block page_title %}Customer Management{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <p class="text-gray-500">View and manage customer accounts</p>
+    <div class="relative">
+        <input type="text" placeholder="Search customers..." 
+            class="pl-10 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-secondary outline-none">
+        <span class="absolute left-3 top-2.5 text-gray-400">🔍</span>
+    </div>
+</div>
+
+<div class="bg-surface rounded-2xl card overflow-hidden">
+    <table class="w-full">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="text-left px-6 py-4 text-sm font-medium text-gray-600">Customer</th>
+                <th class="text-left px-6 py-4 text-sm font-medium text-gray-600">Contact</th>
+                <th class="text-left px-6 py-4 text-sm font-medium text-gray-600">Bookings</th>
+                <th class="text-left px-6 py-4 text-sm font-medium text-gray-600">Total Spent</th>
+                <th class="text-left px-6 py-4 text-sm font-medium text-gray-600">Joined</th>
+                <th class="text-left px-6 py-4 text-sm font-medium text-gray-600">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+            {% for customer in customers %}
+            <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-medium">
+                            {{ customer.name|slice:":1"|upper }}
+                        </div>
+                        <div>
+                            <p class="font-medium text-primary">{{ customer.name }}</p>
+                            <p class="text-sm text-gray-500">ID: {{ customer.id }}</p>
+                        </div>
+                    </div>
+                </td>
+                <td class="px-6 py-4">
+                    <p class="text-sm text-primary">{{ customer.email|default:'-' }}</p>
+                    <p class="text-sm text-gray-500">{{ customer.phone }}</p>
+                </td>
+                <td class="px-6 py-4">
+                    <span class="text-sm text-gray-600">{{ customer.total_bookings|default:0 }} bookings</span>
+                </td>
+                <td class="px-6 py-4">
+                    <span class="font-medium text-primary">-</span>
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-600">
+                    {{ customer.created_at|date:"M d, Y" }}
+                </td>
+                <td class="px-6 py-4">
+                    <a href="{% url 'console-customer-detail' customer.id %}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">View</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                    <span class="text-4xl block mb-2">👤</span>
+                    No customers found
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

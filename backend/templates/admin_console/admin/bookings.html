@@ -1,0 +1,92 @@
+{% extends 'admin_console/base.html' %}
+
+{% block title %}Bookings - Admin Console{% endblock %}
+{% block page_title %}Booking Management{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <div class="flex gap-3">
+        <a href="?status=all" class="px-4 py-2 rounded-xl text-sm font-medium {% if status == 'all' %}bg-secondary text-white{% else %}bg-surface text-gray-600{% endif %}">All</a>
+        <a href="?status=CONFIRMED" class="px-4 py-2 rounded-xl text-sm font-medium {% if status == 'CONFIRMED' %}bg-secondary text-white{% else %}bg-surface text-gray-600{% endif %}">Confirmed</a>
+        <a href="?status=COMPLETED" class="px-4 py-2 rounded-xl text-sm font-medium {% if status == 'COMPLETED' %}bg-secondary text-white{% else %}bg-surface text-gray-600{% endif %}">Completed</a>
+        <a href="?status=CANCELLED" class="px-4 py-2 rounded-xl text-sm font-medium {% if status == 'CANCELLED' %}bg-secondary text-white{% else %}bg-surface text-gray-600{% endif %}">Cancelled</a>
+    </div>
+</div>
+
+<div class="bg-surface rounded-2xl card overflow-hidden">
+    <table class="w-full">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="text-left px-6 py-4 text-sm font-medium text-gray-600">Booking ID</th>
+                <th class="text-left px-6 py-4 text-sm font-medium text-gray-600">Customer</th>
+                <th class="text-left px-6 py-4 text-sm font-medium text-gray-600">Court / Venue</th>
+                <th class="text-left px-6 py-4 text-sm font-medium text-gray-600">Date & Time</th>
+                <th class="text-left px-6 py-4 text-sm font-medium text-gray-600">Amount</th>
+                <th class="text-left px-6 py-4 text-sm font-medium text-gray-600">Status</th>
+                <th class="text-left px-6 py-4 text-sm font-medium text-gray-600">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+            {% for booking in bookings %}
+            <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4">
+                    <span class="font-mono text-sm text-primary">#{{ booking.id }}</span>
+                </td>
+                <td class="px-6 py-4">
+                    <div>
+                        <p class="font-medium text-primary">{{ booking.customer_name|default:'Guest' }}</p>
+                        <p class="text-sm text-gray-500">{{ booking.customer_phone|default:'-' }}</p>
+                    </div>
+                </td>
+                <td class="px-6 py-4">
+                    <div>
+                        <p class="text-sm text-primary">{{ booking.court.name }}</p>
+                        <p class="text-xs text-gray-500">{{ booking.court.venue.name }}</p>
+                    </div>
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-600">
+                    <p>{{ booking.date|date:"M d, Y" }}</p>
+                    <p class="text-xs text-gray-500">{{ booking.start_time }} - {{ booking.end_time }}</p>
+                </td>
+                <td class="px-6 py-4">
+                    <span class="font-medium text-primary">₹{{ booking.total_amount }}</span>
+                </td>
+                <td class="px-6 py-4">
+                    <span class="px-3 py-1 rounded-full text-sm font-medium
+                        {% if booking.status == 'CONFIRMED' %}bg-blue-100 text-blue-800
+                        {% elif booking.status == 'COMPLETED' %}bg-green-100 text-green-800
+                        {% elif booking.status == 'CANCELLED' %}bg-red-100 text-red-600
+                        {% else %}bg-gray-100 text-gray-600{% endif %}">
+                        {{ booking.status }}
+                    </span>
+                </td>
+                <td class="px-6 py-4">
+                    {% if booking.status == 'CONFIRMED' %}
+                    <div class="flex gap-2">
+                        <form method="POST" action="{% url 'console-booking-complete' booking.id %}" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="text-green-600 hover:text-green-800 text-sm font-medium">Complete</button>
+                        </form>
+                        <span class="text-gray-300">|</span>
+                        <form method="POST" action="{% url 'console-booking-cancel' booking.id %}" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="text-red-600 hover:text-red-800 text-sm font-medium">Cancel</button>
+                        </form>
+                    </div>
+                    {% else %}
+                    <span class="text-gray-400 text-sm">-</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+                    <span class="text-4xl block mb-2">📅</span>
+                    No bookings found
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

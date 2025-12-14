@@ -1,0 +1,64 @@
+{% extends 'admin_console/base.html' %}
+
+{% block title %}Global Configuration - Admin Console{% endblock %}
+{% block page_title %}Global Configuration{% endblock %}
+
+{% block content %}
+<div class="bg-surface rounded-2xl p-8 card max-w-2xl">
+    <h3 class="text-lg font-semibold text-primary mb-6">Platform Settings</h3>
+    
+    <form method="POST" action="{% url 'console-global-config' %}">
+        {% csrf_token %}
+        <div class="space-y-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Commission Percentage (%)</label>
+                <input type="number" name="commission_percentage" step="0.01" min="0" max="100"
+                    value="{{ config.commission_percentage|default:10 }}"
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-secondary focus:border-secondary outline-none">
+                <p class="text-sm text-gray-500 mt-1">Platform commission on all bookings</p>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Payout Cycle</label>
+                <select name="payout_cycle" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-secondary focus:border-secondary outline-none">
+                    <option value="DAILY" {% if config.payout_cycle == 'DAILY' %}selected{% endif %}>Daily</option>
+                    <option value="WEEKLY" {% if config.payout_cycle == 'WEEKLY' %}selected{% endif %}>Weekly</option>
+                    <option value="BIWEEKLY" {% if config.payout_cycle == 'BIWEEKLY' %}selected{% endif %}>Bi-Weekly</option>
+                    <option value="MONTHLY" {% if config.payout_cycle == 'MONTHLY' %}selected{% endif %}>Monthly</option>
+                </select>
+                <p class="text-sm text-gray-500 mt-1">How often vendors receive payouts</p>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">SMS Mode</label>
+                <select name="sms_mode" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-secondary focus:border-secondary outline-none">
+                    <option value="LOG" {% if config.sms_mode == 'LOG' %}selected{% endif %}>LOG (Debug Mode)</option>
+                    <option value="TWILIO" {% if config.sms_mode == 'TWILIO' %}selected{% endif %}>TWILIO (Production)</option>
+                </select>
+                <p class="text-sm text-gray-500 mt-1">LOG mode prints SMS to console, TWILIO sends real messages</p>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Minimum Booking Amount (₹)</label>
+                <input type="number" name="min_booking_amount" min="0"
+                    value="{{ config.min_booking_amount|default:100 }}"
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-secondary focus:border-secondary outline-none">
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Cancellation Window (Hours)</label>
+                <input type="number" name="cancellation_window_hours" min="0"
+                    value="{{ config.cancellation_window_hours|default:24 }}"
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-secondary focus:border-secondary outline-none">
+                <p class="text-sm text-gray-500 mt-1">Hours before booking when cancellation is allowed</p>
+            </div>
+            
+            <div class="pt-4 border-t">
+                <button type="submit" class="bg-secondary text-white px-8 py-3 rounded-xl font-medium btn-primary">
+                    Save Configuration
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

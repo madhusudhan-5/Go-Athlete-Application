@@ -1,0 +1,502 @@
+Build a complete Vendor application using:
+
+Frontend: Expo React Native (Android + iOS + Web)
+Backend: Django REST Framework
+Design System: Material Design 3 (MD3)
+Color palette:
+primary: #0A1F35
+secondary: #DA6F2B
+darkPrimary: #030929
+use MD3 greys, black, white for surfaces
+Light mode + Dark mode (user selectable), persist preference
+Responsive layouts for Android, iOS, and Web
+
+==================================================
+APP ENTRY + LOADER
+==================================================
+Show an animated MD3 splash loader with logo
+Smooth fade transition → Login/Register screen
+
+==================================================
+AUTH MODULE
+==================================================
+LOGIN:
+email
+password
+validation required
+error states
+loading state
+success → check vendor.status
+IF status != APPROVED → show “Pending Approval” screen only
+
+REGISTRATION:
+Fields:
+firstName
+lastName
+ownerName
+businessName/venueName (optional based on roles)
+fullAddress
+city
+state
+pincode
+email
+phone
+password
+confirmPassword
+businessType (multi-select: VENUE, COACH, ECOM)
+ID proofs upload (Aadhaar, PAN, License) – min 2 required
+profilePhoto upload
+license upload if VENUE type selected
+validation:
+all required fields cannot be empty
+email unique
+password == confirmPassword
+min 2 ID proofs mandatory
+After registration:
+Create vendor with status=PENDING
+Show success screen → “Submitted for Approval”
+Vendor cannot login until approved by admin
+
+==================================================
+ROLE-BASED ACCESS
+==================================================
+Vendor can be:
+1. VENUE OWNER
+2. COACH
+3. ECOM vendor
+4. ANY combination
+
+Show dashboard modules based on roles activated
+
+==================================================
+DASHBOARD (role based)
+==================================================
+Use MD3 cards, charts, segmented control, responsive layout
+Include customizable dashboard widgets—vendor can reorder or hide widgets
+
+GLOBAL DASHBOARD SECTIONS:
+- Daily bookings graph
+- Earnings graph
+- Weekly trend charts
+- Booking count
+- Upcoming 3-day bookings list
+- Push notification access
+- Search bar (advanced)
+- Product/order alerts
+- Membership alerts
+- Calendar sync button (Google Calendar sync placeholder)
+- Promotions widget
+
+VENUE OWNER DASHBOARD:
+Cards:
+Total Venues
+Total Courts
+Today Bookings
+Earnings after commission
+Chart: last 7 days venue bookings
+List: Today bookings
+List: Next 3 days bookings
+Alerts: inactive courts → warning
+
+COACH DASHBOARD:
+Cards:
+Today Sessions
+Upcoming Sessions
+Coach Earnings after commission
+Training Showcase Videos
+Certificates
+Customer Chats (placeholder)
+Video Call (placeholder)
+
+ECOMMERCE DASHBOARD:
+Cards:
+Products Count
+Today Orders
+Out of Stock Alerts
+Earnings after commission
+Chart: 7-day product sales
+
+If vendor has ALL 3 roles:
+Use segmented tabs:
+TAB 1: VENUE
+TAB 2: COACH
+TAB 3: ECOM
+
+==================================================
+VENUE MANAGEMENT
+==================================================
+List → Add → Edit → Delete → Activate/Deactivate
+
+Venue fields:
+venueName
+description
+address
+city
+pincode
+phone
+location (lat/long optional)
+images (1–5 required)
+venueStatus ACTIVE/INACTIVE
+
+Validation:
+No empty mandatory fields
+Min 1 image
+On edit → review screen → confirmation → success screen
+
+Venue details screen:
+Show venue photos (carousel)
+Quick actions:
+- Add Court
+- View Courts
+- Slot Generator
+- Today’s bookings
+- Earnings
+
+==================================================
+COURT MANAGEMENT
+==================================================
+Court fields:
+courtName
+sportType (dropdown)
+pricePerHour
+capacity
+lightsAvailable
+surfaceType
+photos (min 2, max 5)
+courtStatus ACTIVE/INACTIVE
+
+Actions:
+Add court under venue (choose venue from dropdown)
+Edit
+Delete
+Activate/Deactivate
+
+Validation:
+price > 0
+capacity >=1
+min 2 images
+
+After save:
+Review screen → Submit → Success screen → Redirect to list
+
+==================================================
+SLOT GENERATOR (per court)
+==================================================
+Fields:
+dateRangeStart
+dateRangeEnd
+startTime
+endTime
+slotDurationMinutes
+
+Preview slots list
+Save slots
+Prevent overlapping slots
+Color-coded preview
+Success screen after save
+
+==================================================
+CALENDAR MODULE
+==================================================
+Calendar tab with:
+- Courts bookings
+- Coaching sessions
+- Membership blocks
+- Product order slots (if needed)
+Color coding:
+Green → available
+Orange → booked
+Grey → membership block
+
+Tap items → detail screen
+Tap empty slot → manual booking
+
+==================================================
+MANUAL COURT BOOKING
+==================================================
+Fields:
+customerName
+customerPhone
+court
+venue
+timeSlot
+price
+paymentMethod (cash/online)
+offer applied (optional)
+Validate slot availability
+Create booking
+Show success + summary
+
+==================================================
+MEMBERSHIPS
+==================================================
+Vendor creates memberships:
+Duration:
+- 1 month
+- 3 months
+- 6 months
+- 8 months
+Price
+Description
+
+Membership bookings shown in calendar
+Commission automatically applied
+
+==================================================
+COACH MODULE
+==================================================
+Fields:
+coachName
+sportSpecialization
+experience
+profilePhoto
+description
+5 training videos (upload)
+unlimited certificates (PDF upload)
+availability schedule
+pricePerSession
+
+Screens:
+Add/Edit/Delete coach
+Coach profile public view in app
+Customer can:
+- chat
+- video call (placeholder)
+- view videos
+- view certificates
+
+Vendor dashboard shows:
+Sessions today
+Upcoming sessions
+Coach earnings after commission
+
+==================================================
+ECOMMERCE MODULE
+==================================================
+Add/Edit/Delete product
+
+Fields:
+productName
+category
+MRP
+sellingPrice
+description
+stockQuantity
+images (2–5)
+status ACTIVE/INACTIVE
+
+Validation:
+sellingPrice <= MRP
+min 2 images
+stock >= 0
+
+If stock == 0 → show Out of Stock and disable purchase
+
+==================================================
+OFFERS MODULE
+==================================================
+Vendor can ONLY select offers created by admin
+Fields assigned by admin:
+percentage OR flat
+value
+validFrom
+validTo
+
+Vendor can apply offer to:
+- Venue
+- Court
+- Product
+- Coach
+- Membership
+
+Offer dropdown in add/edit screens
+
+==================================================
+SEARCH + FILTER (advanced)
+==================================================
+Global search bar:
+Search by:
+venues
+courts
+products
+coaches
+bookings
+filters:
+status
+venue
+sport
+price range
+date range
+
+==================================================
+PROMOTIONS MODULE
+==================================================
+Admin-created promotions visible to vendor
+Vendor can “activate” promotions for:
+- venue
+- courts
+- products
+- coaches
+
+Do NOT edit promotion values—vendor readonly
+
+==================================================
+ANALYTICS MODULE
+==================================================
+Charts:
+Daily bookings
+Weekly earnings
+Product sales trend
+Coaching sessions trend
+Membership revenue
+
+Export CSV option
+MD3 charts lightweight
+
+==================================================
+PUSH NOTIFICATIONS
+==================================================
+Vendor receives notifications for:
+new bookings
+cancellations
+membership renewals
+low stock alerts
+admin messages
+
+Use expo-notifications
+
+==================================================
+CALENDAR SYNC (placeholder)
+==================================================
+Button “Sync to Google Calendar”
+Call placeholder API
+Show success popup
+
+==================================================
+PROFILE MODULE
+==================================================
+Editable fields:
+photo
+firstName
+lastName
+email
+phone
+address
+ID proofs (view)
+upload new ID (if needed)
+Theme toggle (light/dark)
+Logout button
+
+==================================================
+UPLOAD FUNCTIONALITY
+==================================================
+Must support upload for:
+venue photos
+court photos
+product images
+ID proofs
+coach profile photo
+coach videos (URLs)
+coach certificates (PDF)
+
+Use expo-image-picker & expo-document-picker
+Send to Django → return URL
+Store only URLs, no heavy binary
+
+==================================================
+SUCCESS SCREENS
+==================================================
+Every module must show:
+Review → Submit → Success
+Success with:
+checkmark animation
+summary data
+CTA: Back to list / Add another
+
+==================================================
+VALIDATIONS (GLOBAL)
+==================================================
+No empty mandatory fields
+Email unique
+Password match
+Min 2 images for courts & products
+Min 2 ID proofs at registration
+No overlapping court slots
+No overlapping bookings
+Stock must be >=1 to allow sale
+Court must be ACTIVE to book
+Venue must be ACTIVE to display
+Approved vendors can access modules
+Inactive vendors → lockout screen
+
+==================================================
+COMMISSIONS LOGIC
+==================================================
+Admin configures commission:
+Court commission %
+Coach commission %
+Ecommerce commission %
+Membership commission %
+
+Vendor earnings = totalAmount - commission
+Vendor can SEE commission but cannot edit
+
+==================================================
+ADMIN + SUPER ADMIN INTEGRATION POINTS
+==================================================
+Vendor status approval by Admin
+Commissions set by Admin
+Offers created by Admin
+Super Admin can:
+manage Admins
+manage platform settings
+override permissions
+
+Vendor app should send required data to admin endpoints
+
+==================================================
+DESIGN REQUIREMENTS (MD3)
+==================================================
+Use MD3 components:
+AppBar
+BottomTabNavigation
+Drawer for Web
+Cards
+Buttons
+TextFields
+Chips
+Sheets
+Dialogs
+Ripple
+Skeleton loaders
+Elevation levels 1–5
+Smooth transitions
+Responsive UI
+
+==================================================
+OUTPUT REQUIRED:
+==================================================
+Generate full Django backend:
+models
+serializers
+viewsets
+urls
+file upload handlers
+vendor approval logic
+
+Generate Expo frontend:
+navigation structure
+screens for every module
+light/dark MD3 theme provider
+forms + validations
+upload handlers
+success screens
+calendar views
+charts
+push notifications
+search filters
+analytics pages
+role-based dashboards
+all CRUD operations
+ALL navigation flows
+ALL validations

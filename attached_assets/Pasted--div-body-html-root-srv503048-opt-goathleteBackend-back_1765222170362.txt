@@ -1,0 +1,41 @@
+/div></body></html>
+root@srv503048:/opt/goathleteBackend/backend/deploy# sudo certbot certonly --webroot -w /var/www/letsencrypt -d goathlete.in --email YOUR_EMAIL --agree-tos
+Saving debug log to /var/log/letsencrypt/letsencrypt.log
+Requesting a certificate for goathlete.in
+
+Certbot failed to authenticate some domains (authenticator: webroot). The Certificate Authority reported these problems:
+  Domain: goathlete.in
+  Type:   unauthorized
+  Detail: 2a02:4780:4c:78e7:9af4:d5c9:38b7:a3dd: Invalid response from http://goathlete.in/.well-known/acme-challenge/t6mMYm6o8iaCE9N7hB6O-7gJNbI1q_9zONKo_DLZQ84: 404
+
+Hint: The Certificate Authority failed to download the temporary challenge files created by Certbot. Ensure that the listed domains serve their content from the provided --webroot-path/-w and that files created there can be downloaded from the internet.
+
+Some challenges have failed.
+Ask for help or search for solutions at https://community.letsencrypt.org. See the logfile /var/log/letsencrypt/letsencrypt.log or re-run Certbot with -v for more details.
+root@srv503048:/opt/goathleteBackend/backend/deploy# sudo certbot certonly --webroot -w /var/www/letsencrypt -d goathlete.in --email contact@goathlete.in --agree-tos
+Saving debug log to /var/log/letsencrypt/letsencrypt.log
+Requesting a certificate for goathlete.in
+
+Certbot failed to authenticate some domains (authenticator: webroot). The Certificate Authority reported these problems:
+  Domain: goathlete.in
+  Type:   unauthorized
+  Detail: 2a02:4780:4c:f97a:9706:a183:a010:871f: Invalid response from http://goathlete.in/.well-known/acme-challenge/QBl_voZszZeZDLbbharWF0N-L4J3GGZxBIYAPCwlBZk: 404
+
+Hint: The Certificate Authority failed to download the temporary challenge files created by Certbot. Ensure that the listed domains serve their content from the provided --webroot-path/-w and that files created there can be downloaded from the internet.
+
+Some challenges have failed.
+Ask for help or search for solutions at https://community.letsencrypt.org. See the logfile /var/log/letsencrypt/letsencrypt.log or re-run Certbot with -v for more details.
+root@srv503048:/opt/goathleteBackend/backend/deploy# sudo certbot certonly --webroot -w /var/www/letsencrypt -d goathlete.in --email cupport@goathlete.in --agree-tos
+Saving debug log to /var/log/letsencrypt/letsencrypt.log
+Requesting a certificate for goathlete.in
+
+Certbot failed to authenticate some domains (authenticator: webroot). The Certificate Authority reported these problems:
+  Domain: goathlete.in
+  Type:   unauthorized
+  Detail: 2a02:4780:4b:246f:a957:1105:b91d:440e: Invalid response from http://goathlete.in/.well-known/acme-challenge/B1zZpIXnFStNM5K_ObsdS0_esJ_FlFXlyqVr6ot8M9M: 404
+
+Hint: The Certificate Authority failed to download the temporary challenge files created by Certbot. Ensure that the listed domains serve their content from the provided --webroot-path/-w and that files created there can be downloaded from the internet.
+
+Some challenges have failed.
+Ask for help or search for solutions at https://community.letsencrypt.org. See the logfile /var/log/letsencrypt/letsencrypt.log or re-run Certbot with -v for more details.
+root@srv503048:/opt/goathleteBackend/backend/deploy# sudo certbot certonly --webroot -w /var/www/letsencrypt -d goathlete.in --email YOUR_EMAIL --agree-tos

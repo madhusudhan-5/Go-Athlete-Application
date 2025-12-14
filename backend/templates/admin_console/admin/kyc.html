@@ -1,0 +1,77 @@
+{% extends 'admin_console/base.html' %}
+
+{% block title %}KYC Verification - Admin Console{% endblock %}
+{% block page_title %}KYC Verification{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <p class="text-gray-500">Review and verify vendor KYC documents</p>
+    <div class="flex gap-3">
+        <a href="?status=all" class="px-4 py-2 rounded-xl text-sm font-medium {% if status == 'all' %}bg-secondary text-white{% else %}bg-surface text-gray-600{% endif %}">All</a>
+        <a href="?status=PENDING" class="px-4 py-2 rounded-xl text-sm font-medium {% if status == 'PENDING' %}bg-secondary text-white{% else %}bg-surface text-gray-600{% endif %}">Pending</a>
+        <a href="?status=VERIFIED" class="px-4 py-2 rounded-xl text-sm font-medium {% if status == 'VERIFIED' %}bg-secondary text-white{% else %}bg-surface text-gray-600{% endif %}">Verified</a>
+        <a href="?status=REJECTED" class="px-4 py-2 rounded-xl text-sm font-medium {% if status == 'REJECTED' %}bg-secondary text-white{% else %}bg-surface text-gray-600{% endif %}">Rejected</a>
+    </div>
+</div>
+
+<div class="bg-surface rounded-2xl card overflow-hidden">
+    <table class="w-full">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="text-left px-6 py-4 text-sm font-medium text-gray-600">Vendor</th>
+                <th class="text-left px-6 py-4 text-sm font-medium text-gray-600">Document Type</th>
+                <th class="text-left px-6 py-4 text-sm font-medium text-gray-600">Submitted</th>
+                <th class="text-left px-6 py-4 text-sm font-medium text-gray-600">Status</th>
+                <th class="text-left px-6 py-4 text-sm font-medium text-gray-600">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+            {% for kyc in kyc_list %}
+            <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4">
+                    <div>
+                        <p class="font-medium text-primary">{{ kyc.vendor.business_name }}</p>
+                        <p class="text-sm text-gray-500">{{ kyc.vendor.contact_email }}</p>
+                    </div>
+                </td>
+                <td class="px-6 py-4">
+                    <span class="text-sm text-gray-600">{{ kyc.document_type|default:'Business Registration' }}</span>
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-600">
+                    {{ kyc.submitted_at|date:"M d, Y" }}
+                </td>
+                <td class="px-6 py-4">
+                    <span class="px-3 py-1 rounded-full text-sm font-medium
+                        {% if kyc.status == 'VERIFIED' %}bg-green-100 text-green-800
+                        {% elif kyc.status == 'PENDING' %}bg-yellow-100 text-yellow-800
+                        {% else %}bg-red-100 text-red-600{% endif %}">
+                        {{ kyc.status }}
+                    </span>
+                </td>
+                <td class="px-6 py-4">
+                    <div class="flex gap-2">
+                        {% if kyc.status == 'PENDING' %}
+                        <form method="POST" action="{% url 'console-kyc-verify' kyc.id %}" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="bg-green-100 text-green-800 px-3 py-1 rounded-lg text-sm font-medium hover:bg-green-200">Verify</button>
+                        </form>
+                        <form method="POST" action="{% url 'console-kyc-reject' kyc.id %}" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="bg-red-100 text-red-600 px-3 py-1 rounded-lg text-sm font-medium hover:bg-red-200">Reject</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                    <span class="text-4xl block mb-2">📄</span>
+                    No KYC submissions found
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

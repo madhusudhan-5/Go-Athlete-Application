@@ -1,0 +1,127 @@
+{% extends 'admin_console/base.html' %}
+
+{% block title %}Offers - Admin Console{% endblock %}
+{% block page_title %}Offers Management{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <p class="text-gray-500">Manage platform-wide offers and discounts</p>
+    <button onclick="document.getElementById('addOfferModal').classList.remove('hidden')" 
+        class="bg-secondary text-white px-6 py-3 rounded-xl font-medium btn-primary">
+        + Add Offer
+    </button>
+</div>
+
+<div class="bg-surface rounded-2xl card overflow-hidden">
+    <table class="w-full">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="text-left px-6 py-4 text-sm font-medium text-gray-600">Offer Name</th>
+                <th class="text-left px-6 py-4 text-sm font-medium text-gray-600">Discount</th>
+                <th class="text-left px-6 py-4 text-sm font-medium text-gray-600">Valid Period</th>
+                <th class="text-left px-6 py-4 text-sm font-medium text-gray-600">Status</th>
+                <th class="text-left px-6 py-4 text-sm font-medium text-gray-600">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+            {% for offer in offers %}
+            <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4">
+                    <div>
+                        <p class="font-medium text-primary">{{ offer.name }}</p>
+                        <p class="text-sm text-gray-500">{{ offer.code|default:'-' }}</p>
+                    </div>
+                </td>
+                <td class="px-6 py-4">
+                    <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                        {% if offer.discount_type == 'PERCENTAGE' %}
+                        {{ offer.discount_value }}% OFF
+                        {% else %}
+                        ₹{{ offer.discount_value }} OFF
+                        {% endif %}
+                    </span>
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-600">
+                    {{ offer.valid_from|date:"M d" }} - {{ offer.valid_to|date:"M d, Y" }}
+                </td>
+                <td class="px-6 py-4">
+                    {% if offer.is_active %}
+                    <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">Active</span>
+                    {% else %}
+                    <span class="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm">Inactive</span>
+                    {% endif %}
+                </td>
+                <td class="px-6 py-4">
+                    <div class="flex gap-2">
+                        <form method="POST" action="{% url 'console-offer-toggle' offer.id %}" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                {% if offer.is_active %}Deactivate{% else %}Activate{% endif %}
+                            </button>
+                        </form>
+                        <span class="text-gray-300">|</span>
+                        <a href="{% url 'console-offer-edit' offer.id %}" class="text-gray-600 hover:text-primary text-sm font-medium">Edit</a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                    <span class="text-4xl block mb-2">🎁</span>
+                    No offers created yet
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Add Offer Modal -->
+<div id="addOfferModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+    <div class="bg-white rounded-2xl p-8 w-full max-w-lg mx-4">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-semibold text-primary">Add New Offer</h3>
+            <button onclick="document.getElementById('addOfferModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">✕</button>
+        </div>
+        <form method="POST" action="{% url 'console-offer-add' %}">
+            {% csrf_token %}
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Offer Name</label>
+                    <input type="text" name="name" required class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-secondary outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Offer Code</label>
+                    <input type="text" name="code" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-secondary outline-none" placeholder="SUMMER2025">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Discount Type</label>
+                        <select name="discount_type" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-secondary outline-none">
+                            <option value="PERCENTAGE">Percentage</option>
+                            <option value="FIXED">Fixed Amount</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Discount Value</label>
+                        <input type="number" name="discount_value" step="0.01" required class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-secondary outline-none">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Valid From</label>
+                        <input type="date" name="valid_from" required class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-secondary outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Valid To</label>
+                        <input type="date" name="valid_to" required class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-secondary outline-none">
+                    </div>
+                </div>
+                <div class="pt-4">
+                    <button type="submit" class="w-full bg-secondary text-white py-3 rounded-xl font-medium btn-primary">Create Offer</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,65 @@
+A.3 Minimal Django model & API snippets (paste into backend)
+
+models.py
+
+from django.db import models
+
+class GlobalConfig(models.Model):
+    commission_pct = models.DecimalField(max_digits=5, decimal_places=2, default=10.00)
+    payout_cycle = models.CharField(max_length=10, default='WEEKLY')
+    min_payout = models.IntegerField(default=1000)
+
+class Offer(models.Model):
+    title = models.CharField(max_length=200)
+    discount_type = models.CharField(max_length=10, choices=[('PCT','Percent'),('FLAT','Flat')])
+    value = models.DecimalField(max_digits=8, decimal_places=2)
+    starts_at = models.DateTimeField()
+    ends_at = models.DateTimeField()
+    active = models.BooleanField(default=True)
+
+class AuditLog(models.Model):
+    user = models.CharField(max_length=100)
+    action = models.CharField(max_length=100)
+    entity_type = models.CharField(max_length=50)
+    entity_id = models.CharField(max_length=50, null=True, blank=True)
+    old_value = models.JSONField(null=True, blank=True)
+    new_value = models.JSONField(null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+
+views.py (SMS endpoint)
+
+import os
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from twilio.rest import Client
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def send_sms(request):
+    to = request.data.get('to')
+    message = request.data.get('message')
+    if not to or not message:
+        return Response({'error':'invalid payload'}, status=400)
+    if os.getenv('SMS_MODE','LOG') == 'LOG':
+        # development fallback: log and return success
+        print("SMS log:", to, message)
+        return Response({'status':'logged'})
+    client = Client(os.environ['TWILIO_SID'], os.environ['TWILIO_TOKEN'])
+    msg = client.messages.create(body=message, from_=os.environ['TWILIO_FROM'], to=to)
+    return Response({'sid': msg.sid})
+
+
+urls.py
+
+from django.urls import path
+from .views import send_sms
+
+urlpatterns = [
+    path('send-sms/', send_sms),
+    # other endpoints...
+]
+
+
+Note: Set SMS_MODE=LOG in Replit secrets to avoid Twilio charges during testing. Switch to SMS_MODE=TWILIO to actually send.
